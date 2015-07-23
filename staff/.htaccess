@@ -1,0 +1,11 @@
+#Options +Indexes
+
+#AuthType Basic
+#AuthName "Koicon manager"
+#       SSLRequireSSL
+#AuthUserFile /home/koicon/auth/passwd
+#AuthGroupFile /home/koicon/auth/group
+#       <Limit HEAD GET POST OPTIONS PROPFIND>
+#Require valid-user
+#Require group executives
+#       </Limit>
