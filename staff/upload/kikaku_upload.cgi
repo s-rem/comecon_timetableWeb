@@ -6,17 +6,12 @@ use strict;
 use warnings;
 use utf8;
 use CGI;
-use CGI::Session;
 use CGI::Carp qw(fatalsToBrowser);
-use HTML::Template;
-use HTML::FillInForm;
-use SFCON::Register_db;
-
 use Encode::Guess qw/ shiftjis euc-jp 7bit-jis /;
-use Encode qw/ decode encode from_to/;
-
+use Encode qw/ decode encode /;
 use File::Copy;
 use File::Basename;
+use SFCON::Register_db;
 use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::FmtJapan;
 
@@ -33,7 +28,16 @@ sub main {
     # 経過表示のためのヘッダ創出
     my $q  = CGI->new();
     print $q->header( -type=>'text/html', -charset=>'UTF-8', );
-    print "<body>\n<H1>解析開始</H1>\n";
+    print << "EOT"
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <TITLE>解析中</TITLE>
+</head>
+<body>
+<H1>解析開始</H1>
+EOT
 
     # シート選択
     my ( $Sprogram, $Sperson ) = getSheet( $book );
@@ -273,6 +277,7 @@ my $NMMT = 'pg_name_master';
 my $RLMT = 'pg_role_master';
 my $PSMT = 'pg_person_status_master';
 my $RMMT = 'room_master';
+my $RNMT = 'room_name_master';
 my $PSIF = 'pg_person_info';
 my $PSDT = 'pg_person_detail';
 my $PSOPIF = 'pg_person_open_info';
@@ -445,12 +450,13 @@ sub time_add_db{
     $sth->execute($room_code, $start_time, $end_time);
 
     my $pgNmMt = $dbobj->prefix() . $NMMT;
+    my $pgRnMt = $dbobj->prefix() . $RNMT;
     $sth = $db->prepare(
         'INSERT INTO ' . $pgLcDt . 
         ' (pg_key, room_key, room_row, start_time, end_time) ' .
         'VALUES( ' .
             '(SELECT pg_key FROM ' . $pgNmMt . ' WHERE pg_code   = ?) , ' .
-            '(SELECT seq    FROM ' . $pgNmMt . ' WHERE room_code = ?) , ' .
+            '(SELECT seq    FROM ' . $pgRnMt . ' WHERE room_code = ?) , ' .
             '?, ?, ? )'
         );
     my $stat = $sth->execute(

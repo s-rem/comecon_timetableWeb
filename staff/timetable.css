@@ -1,0 +1,109 @@
+body {
+    background-color: #ffffff;
+    text-color: #000000;
+    margin: 0;
+}
+a:link {
+    text-color: #0000ff;
+	text-decoration:none;
+}
+a:hover {
+	text-decoration:none;
+	background-color:yellow;
+}
+a:active {
+    text-color: #ff0000;
+	text-decoration:none;
+	background-color:yellow;
+}
+a:visited {
+    text-color: #000099;
+	text-decoration:none;
+}
+.pp {
+	color : green;
+	font-size : 80%
+} 
+a.pp:link {
+	color : green;
+	text-decoration:none;
+}
+a.pp:hover {
+	color : green;
+	text-decoration:none;
+	background-color:yellow;
+}
+a.pp:active {
+	color : green;
+	text-decoration:none;
+	background-color:yellow;
+}
+a.pp:visited {
+	color : green;
+	text-decoration:none;
+}
+a.pp_ng:link {
+	color : green;
+	text-decoration:line-through;
+}
+.pp_ng {
+	color : green;
+	font-size : 80%
+} 
+a.pp_ng:hover {
+	color : green;
+	text-decoration:line-through;
+	background-color:yellow;
+}
+a.pp_ng:active {
+	color : green;
+	text-decoration:line-through;
+	background-color:yellow;
+}
+a.pp_ng:visited {
+	color : green;
+	text-decoration:line-through;
+}
+.po {
+	color : blue;
+	font-size : 80%
+}
+a.po:link {
+	color : blue;
+}
+a.po:hover {
+	color : blue;
+	text-decoration:none;
+	background-color:yellow;
+}
+a.po:active {
+	color : blue;
+	text-decoration:none;
+	background-color:yellow;
+}
+a.po:visited {
+	color : blue;
+	text-decoration:none;
+}
+.pr {
+	color : red;
+	font-size : 80%
+} 
+a.pr:link {
+	color : red;
+	text-decoration:none;
+}
+a.pr:hover {
+	color : red;
+	text-decoration:none;
+	background-color:yellow;
+}
+a.pr:active {
+	color : red;
+	text-decoration:none;
+	background-color:yellow;
+}
+a.pr:visited {
+	color : red;
+	text-decoration:none;
+}
