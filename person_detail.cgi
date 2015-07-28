@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# スタッフ用タイムテーブル出演者詳細表示
+# 公開用タイムテーブル出演者詳細表示
 #
 use lib ((getpwuid($<))[7]) . '/local/lib/perl5';
 use strict;
@@ -11,7 +11,7 @@ use SFCON::Register_db;
 binmode STDIN,  ":utf8";
 binmode STDOUT, ":utf8";
 
-require('../timetableCmn.pl');
+require('./timetableCmn.pl');
 
 sub main {
     my $person_code = $ENV{'QUERY_STRING'};
@@ -48,7 +48,7 @@ sub outputHtmlHeadBodyTop {
 <HTML lang="ja">
 <HEAD>
   <meta charset="utf-8">
-  <TITLE>Person detail(staff用)</TITLE>
+  <TITLE>Person detail</TITLE>
 </HEAD>
 <BODY>
 <center>
@@ -68,8 +68,8 @@ sub outputPerson {
         $p_oldloc_seq,
         $p_oldperson_name,
        ) = @_;
-    my ( $day, $stime  ) = split(/\s/,$pArow->[0]);
-    my ( $day2, $etime ) = split(/\s/,$pArow->[1]);
+    my $stime           = $pArow->[0];
+    my $etime           = $pArow->[1];
     my $room_name       = $pArow->[2];
     my $program_code    = $pArow->[3];
     my $program_name    = $pArow->[4];
@@ -90,7 +90,7 @@ sub outputPerson {
     }
     if ( $loc_seq ne $$p_oldloc_seq ) {
         print '</TD></TR><TR>' .
-                '<TD>' . $day . ' ' . $stime . ' ' . $etime . '</td>' .
+                '<TD>' . $stime . '-' . $etime . '</td>' .
                 '<td>' . $room_name . '</td>' .
                 '<td>' . $program_code . ' ' . $program_name . '</td><TD>';
         $$p_oldloc_seq = $loc_seq;
@@ -116,7 +116,7 @@ sub outputPerson {
 #  本来はRegister_dbの中に隠蔽されるべき処理
 
 # テーブル名定数
-our ( $LCDT, $NMMT, $RLMT, $PSMT, $RNMT, $PSIF, $PSDT, );
+our ( $LCDT, $NMMT, $RLMT, $PSMT, $RNMT, $PSOPIF, $PSOPDT, );
 
 # 出演者情報取得
 sub dbGetPerson {
@@ -130,24 +130,14 @@ sub dbGetPerson {
     my $pgRlMt = $dbobj->prefix() . $RLMT;
     my $pgPsMt = $dbobj->prefix() . $PSMT;
     my $pgRnMt = $dbobj->prefix() . $RNMT;
-    my $pgPsIf = $dbobj->prefix() . $PSIF;
-    my $pgPsDt = $dbobj->prefix() . $PSDT;
+    my $pgPsIf = $dbobj->prefix() . $PSOPIF;
+    my $pgPsDt = $dbobj->prefix() . $PSOPDT;
 
     my $sth = $db->prepare(
-        'SELECT a.start_time, a.end_time, b.room_name, c.pg_code, c.pg_name, ' .
-               'a.seq, e.role_code, f.name, ' .
-               '( SELECT count(y.person_key) ' .
-                   'FROM ' . $pgLcDt . ' z ' .
-                    'INNER JOIN ' . $pgPsDt . ' y ON z.pg_key = y.pg_key ' .
-                    'INNER JOIN ' . $pgRlMt . ' x ON y.role_key = x.role_key ' .
-                    'WHERE a.start_time < z.end_time ' .
-                      'AND z.start_time < a.end_time ' .
-                      'AND a.seq != z.seq ' .
-                      'AND d.person_key = y.person_key ' .
-                      "AND (   x.role_code = 'PP' " .
-                          " OR e.role_code = 'PO' and x.role_code = 'PO' " .
-                          " OR e.role_code = 'PR' ) " .
-                '), a.room_row, f.seq, g.ps_code, g.ps_name ' .
+        "SELECT DATE_FORMAT(a.start_time, '%m/%d %H:%i'), " .
+               "DATE_FORMAT(a.end_time, '%H:%i'), " .
+               'b.room_name, c.pg_code, c.pg_name, a.seq, e.role_code, ' .
+               'f.name, 0, a.room_row, f.seq, g.ps_code, g.ps_name ' .
          'FROM ' . $pgLcDt . ' a ' .
           'INNER JOIN ' . $pgRnMt . ' b ON a.room_key = b.seq ' .
           'INNER JOIN ' . $pgNmMt . ' c ON a.pg_key = c.pg_key ' .
@@ -156,6 +146,7 @@ sub dbGetPerson {
           'INNER JOIN ' . $pgPsIf . ' f ON d.person_key = f.seq ' .
           'LEFT JOIN  ' . $pgPsMt . ' g ON d.ps_key = g.ps_key ' .
          'WHERE d.person_key = ? ' .
+           "AND ( e.role_code = 'PP' AND g.ps_code IN ('OK-01' , 'NG-04') ) " .
          'ORDER BY a.start_time, b.room_code, a.room_row, e.role_code' );
     $sth->execute($person_code);
     return $sth;

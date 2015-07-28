@@ -15,6 +15,9 @@ use SFCON::Register_db;
 use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::FmtJapan;
 
+# 共通定義
+require('../../timetableCmn.pl');
+
 # 最終結果出力バッファ
 my $gs_print = '';
 
@@ -28,7 +31,7 @@ sub main {
     # 経過表示のためのヘッダ創出
     my $q  = CGI->new();
     print $q->header( -type=>'text/html', -charset=>'UTF-8', );
-    print << "EOT"
+    print << "EOT";
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -250,38 +253,9 @@ sub getExcelVal{
 #-----以下DB操作
 #  本来はRegister_dbの中に隠蔽されるべき処理
 
-# DB接続
-#   戻り値: Register_dbオブジェクト
-sub db_connect {
-    my $dbobj = SFCON::Register_db->new;
-    my $db = DBI->connect($dbobj->{ds}, $dbobj->{user}, $dbobj->{pass})
-        || die "Got error $DBI::errstr when connecting to $dbobj->{ds}\n";
-    $dbobj->{database} = $db;
-
-    my $sth = $dbobj->{database}->prepare('SET NAMES utf8');
-    $sth->execute;
-    return $dbobj;
-}
-
-# DB切断
-sub db_dissconnect {
-    my (
-        $dbobj,     # Register_dbオブジェクト
-       ) = @_;
-    $dbobj->{database}->disconnect;
-}
-
 # テーブル名定数
-my $LCDT = 'pg_location_detail';
-my $NMMT = 'pg_name_master';
-my $RLMT = 'pg_role_master';
-my $PSMT = 'pg_person_status_master';
-my $RMMT = 'room_master';
-my $RNMT = 'room_name_master';
-my $PSIF = 'pg_person_info';
-my $PSDT = 'pg_person_detail';
-my $PSOPIF = 'pg_person_open_info';
-my $PSOPDT = 'pg_person_open_detail';
+our ( $LCDT, $NMMT, $RLMT, $PSMT, $RMMT, $RNMT, $PSIF, $PSDT,
+      $PSOPIF, $PSOPDT, );
 
 # 企画をDBに登録する
 sub program_add{
