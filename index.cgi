@@ -239,18 +239,12 @@ sub dbGetProg {
 
     my $sth = $db->prepare(
         'SELECT a.start_time, a.end_time, b.room_name, c.pg_code, c.pg_name, ' .
-               'a.seq, e.role_code, f.name, 0, a.room_row, f.seq, ' .
-               'g.ps_code, g.ps_name ' .
+               'a.seq, 0, 0, 0, a.room_row, 0, 0, 0' .
 	     'FROM ' . $pgLcDt . ' a ' .
 	      'INNER JOIN ' . $pgRnMt . ' b ON a.room_key = b.seq ' .
 	      'INNER JOIN ' . $pgNmMt . ' c ON a.pg_key = c.pg_key ' .
-	      'LEFT JOIN  ' . $pgPsDt . ' d ON a.pg_key = d.pg_key ' .
-	      'INNER JOIN ' . $pgRlMt . ' e ON d.role_key = e.role_key ' .
-	      'INNER JOIN ' . $pgPsIf . ' f ON d.person_key = f.seq ' .
-	      'LEFT JOIN  ' . $pgPsMt . ' g ON d.ps_key = g.ps_key ' .
 	     'WHERE c.pg_options = ' . "'公開' " .
-	     'ORDER BY b.room_code, a.room_row, a.start_time, ' .
-                  'e.role_code, d.ps_key, d.seq');
+	     'ORDER BY b.room_code, a.start_time, a.end_time DESC, a.room_row');
     $sth->execute();
     return $sth;
 }

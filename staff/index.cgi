@@ -197,13 +197,12 @@ sub outputTimeTbl {
         $$p_oldloc_seq = $loc_seq;
     }
     my $bl_s = "</SPAN>";
-    my $bl_e = "";
     my $pp_cls = 'pp';
     if ( $status_code eq 'NG-01' || $status_code eq 'NG-02' ) {
         $pp_cls = 'pp_ng';
     }
-    else {
-        $bl_s = '<BLINK>★</BLINK></SPAN>' if ( $person_count != 0 );
+    if ( $person_count != 0 ) {
+        $bl_s = '<BLINK>★</BLINK></SPAN>' 
     }
     if ( $role_code eq 'PP' ) {
         $status_name = '状況不明' if ( $status_name eq '' );
@@ -211,26 +210,22 @@ sub outputTimeTbl {
         print $bl_s .
                 '<A HREF="./person_detail.cgi?' . $person_code .
                   '" CLASS="' . $pp_cls . '" > ' .
-                $person_name . '[' . $status_name . ']</a>' .
-              $bl_e . '<BR>';
+                $person_name . '[' . $status_name . ']</a><BR>';
     } elsif ( $role_code eq 'PO' ) {
         print '<SPAN CLASS="po">主:';
         print $bl_s .
                 '<A HREF="./person_detail.cgi?' . $person_code .
-                  '" CLASS="po" >' . $person_name . '</a>' .
-              $bl_e . '<BR>';
+                  '" CLASS="po" >' . $person_name . '</a><BR>';
     } elsif ( $role_code eq 'PR' ) {
         print '<SPAN CLASS="pr">担:';
         print $bl_s . 
                 '<A HREF="./person_detail.cgi?' . $person_code .
-                  ' "CLASS="pr" >' . $person_name . '</a>' .
-              $bl_e . '<BR>';
+                  ' "CLASS="pr" >' . $person_name . '</a><BR>';
     } else {
         print '<SPAN CLASS="pr">＊:';
         print $bl_s . 
                 '<A HREF="./person_detail.cgi?' . $person_code .
-                  ' "CLASS="pr" >' . $person_name . '</a>' .
-              $bl_e . '<BR>';
+                  ' "CLASS="pr" >' . $person_name . '</a><BR>';
     }
     $$p_col = $e_col;
 }
@@ -338,7 +333,6 @@ sub dbGetProg {
                '( SELECT count(y.person_key) ' .
                    'FROM ' . $pgLcDt . ' z ' .
                      'INNER JOIN ' . $pgPsDt . ' y ON z.pg_key = y.pg_key ' .
-                     'LEFT JOIN ' . $pgPsMt . ' w ON y.ps_key = w.ps_key ' .
                      'INNER JOIN ' . $pgRlMt . ' x ON y.role_key = x.role_key' .
                   ' WHERE a.start_time < z.end_time ' .
                      'AND z.start_time < a.end_time ' .
