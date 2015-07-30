@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+# タイムテーブル関連DBtable場所コード設定
+#
+use lib ((getpwuid($<))[7]) . '/local/lib/perl5';
+use strict;
+use warnings;
+use utf8;
+use File::Spec;
+use File::Basename;
+use SFCON::Register_db;
+
+# 共通定義
+my $Curdir = dirname(File::Spec->rel2abs($0));
+require( $Curdir . '/../timetableCmn.pl');
+
+# テーブル名定数
+our ( $RNMT, );
+
+sub main {
+    my $room_name_master_f = $Curdir . '/room_name_master.csv';
+    unless ( -r $room_name_master_f ) {
+        print $room_name_master_f . " not exist or unreadable\n";
+        exit;
+    }
+
+    my $dbobj = db_connect();
+    my $db = $dbobj->{'database'};
+    my $prefix = $dbobj->prefix();
+
+	my $sth = $db->prepare(
+        "LOAD DATA LOCAL INFILE '$room_name_master_f' " .
+        'INTO TABLE ' . $prefix . $RNMT . ' ' .
+        "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
+	$sth->execute;
+
+    $sth->finish();
+    db_disconnect( $dbobj );
+}
+
+main();
+exit;
+1;

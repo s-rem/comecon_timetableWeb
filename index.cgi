@@ -7,12 +7,14 @@ use warnings;
 use utf8;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser); 
+use File::Spec;
+use File::Basename;
 use SFCON::Register_db;
 binmode STDIN,  ":utf8";
 binmode STDOUT, ":utf8";
 
 # 共通定義
-require('./timetableCmn.pl');
+require( dirname(File::Spec->rel2abs($0)) . '/timetableCmn.pl');
 our(  $PrgURL, @SETime, @TrgDate, $Tspan, $Maxwidth, $Roomwidth, );
 our(  $Maxcol, $Colsize_h, $Colsize, );
 
@@ -221,7 +223,7 @@ EOT
 #  本来はRegister_dbの中に隠蔽されるべき処理
 
 # テーブル名定数
-our ( $LCDT, $NMMT, $RLMT, $PSMT, $RNMT, $PSOPIF, $PSOPDT, );
+our ( $LCDT, $NMMT, $RNMT, );
 
 # 企画情報取得
 sub dbGetProg {
@@ -229,13 +231,10 @@ sub dbGetProg {
         $dbobj,     # Register_dbオブジェクト
        ) = @_;
     my $db = $dbobj->{database};
-    my $pgLcDt = $dbobj->prefix() . $LCDT;
-    my $pgNmMt = $dbobj->prefix() . $NMMT;
-    my $pgRlMt = $dbobj->prefix() . $RLMT;
-    my $pgPsMt = $dbobj->prefix() . $PSMT;
-    my $pgRnMt = $dbobj->prefix() . $RNMT;
-    my $pgPsIf = $dbobj->prefix() . $PSOPIF;
-    my $pgPsDt = $dbobj->prefix() . $PSOPDT;
+    my $prefix = $dbobj->prefix();
+    my $pgLcDt = $prefix . $LCDT;
+    my $pgNmMt = $prefix . $NMMT;
+    my $pgRnMt = $prefix . $RNMT;
 
     my $sth = $db->prepare(
         'SELECT a.start_time, a.end_time, b.room_name, c.pg_code, c.pg_name, ' .

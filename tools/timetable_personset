@@ -1,0 +1,56 @@
+#!/usr/bin/perl
+# タイムテーブル関連DBtable個人情報設定
+#
+use lib ((getpwuid($<))[7]) . '/local/lib/perl5';
+use strict;
+use warnings;
+use utf8;
+use File::Spec;
+use File::Basename;
+use SFCON::Register_db;
+
+# 共通定義
+my $Curdir = dirname(File::Spec->rel2abs($0));
+require( $Curdir . '/../timetableCmn.pl');
+
+# テーブル名定数
+our ( $PSIF, $PSOPIF, );
+
+sub main {
+    my $person_info_f      = File::Spec->rel2abs( $ARGV[0] );
+    my $person_open_info_f = File::Spec->rel2abs( $ARGV[1] );
+
+    error( $ARGV[0] ) unless ( -r $person_info_f );
+    error( $ARGV[1] ) unless ( -r $person_open_info_f );
+
+    my $dbobj = db_connect();
+    my $db = $dbobj->{'database'};
+    my $prefix = $dbobj->prefix();
+
+	my $sth = $db->prepare(
+        "LOAD DATA LOCAL INFILE '$person_info_f' " .
+        'INTO TABLE ' . $prefix . $PSIF . ' ' .
+        "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
+	$sth->execute;
+
+	$sth = $db->prepare(
+        "LOAD DATA LOCAL INFILE '$person_open_info_f' " .
+        'INTO TABLE ' . $prefix . $PSOPIF . ' ' .
+        "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
+	$sth->execute;
+
+    $sth->finish();
+    db_disconnect( $dbobj );
+}
+
+sub error {
+    my (
+        $f,
+       ) = @_;
+    print $f . " not exist or unreadable\n";
+    exit;
+}
+
+main();
+exit;
+1;

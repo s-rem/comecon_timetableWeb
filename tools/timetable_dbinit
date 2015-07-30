@@ -1,0 +1,177 @@
+#!/usr/bin/perl
+# タイムテーブル関連DBtable作成&固定値初期化
+#
+use lib ((getpwuid($<))[7]) . '/local/lib/perl5';
+use strict;
+use warnings;
+use utf8;
+use File::Spec;
+use File::Basename;
+use SFCON::Register_db;
+
+# 共通定義
+my $Curdir = dirname(File::Spec->rel2abs($0));
+require( $Curdir . '/../timetableCmn.pl');
+
+# テーブル名定数
+our ( $LCDT, $NMMT, $RLMT, $PSMT, $RNMT, $PSIF, $PSDT, $PSOPIF, $PSOPDT, );
+
+sub main {
+    my $pg_role_master_f            = $Curdir .'/pg_role_master.csv';
+    my $pg_person_status_master_f   = $Curdir . '/pg_person_status_master.csv';
+
+    error( $pg_role_master_f          ) unless ( -r $pg_role_master_f          );
+    error( $pg_person_status_master_f ) unless ( -r $pg_person_status_master_f );
+
+    my $dbobj = db_connect();
+    my $db = $dbobj->{'database'};
+    my $prefix = $dbobj->prefix();
+
+    # 既存のとおり、MyISAMにする
+	my $sth = $db->prepare("SET storage_engine=MYISAM;");
+	$sth->execute;
+
+	# 実施日時場所詳細テーブル
+	$sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $LCDT . ' ( ' .
+        'seq int auto_increment, ' .
+		'pg_key int DEFAULT NULL, ' .
+		'pg_subkey int DEFAULT  NULL, ' .
+		'start_time datetime DEFAULT  NULL, ' .
+		'end_time datetime DEFAULT  NULL, ' .
+		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+		"dtime DATETIME DEFAULT '99991231235959', " .
+		'PRIMARY KEY (seq,ctime), ' .
+		'INDEX idx01 (pg_key,pg_subkey) )' );
+	$sth->execute;
+
+	# 企画名マスター
+	$sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $NMMT . ' ( ' .
+		'pg_key int auto_increment, ' .
+		'pg_code varchar(128) DEFAULT NULL, ' .
+		'pg_name varchar(128) DEFAULT  NULL, ' .
+		'pg_name_f varchar(128) DEFAULT  NULL, ' .
+		'pg_options varchar(128) DEFAULT  NULL, ' .
+		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+		"dtime DATETIME DEFAULT '99991231235959', " .
+		'PRIMARY KEY (pg_key,ctime), ' .
+		'INDEX idx01 (pg_code) )' );
+	$sth->execute;
+
+	# 企画関係者役割マスター
+	$sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $RLMT . ' ( ' .
+		'role_key int auto_increment, ' .
+		'role_code varchar(128) DEFAULT NULL, ' .
+		'role_name varchar(128) DEFAULT  NULL, ' .
+		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+		"dtime DATETIME DEFAULT '99991231235959', " .
+		'PRIMARY KEY (role_key, ctime), ' .
+		'INDEX idx01 (role_code) )' );
+	$sth->execute;
+
+	# 出演者個人状態マスター
+	$sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSMT . ' ( ' .
+		'ps_key int auto_increment, ' .
+		'ps_code varchar(128) DEFAULT  NULL, ' .
+		'ps_name varchar(128) DEFAULT  NULL, ' .
+		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+		"dtime DATETIME DEFAULT '99991231235959', " .
+		'PRIMARY KEY (ps_key,ctime) )' );
+	$sth->execute;
+
+	# 部屋名のマスタ
+	$sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $RNMT . ' ( ' .
+		'seq int auto_increment, ' .
+		'room_code varchar(128) DEFAULT NULL, ' .
+		'room_name varchar(128) DEFAULT  NULL, ' .
+		'room_options varchar(128) DEFAULT  NULL, ' .
+		'PRIMARY KEY (seq) )' );
+	$sth->execute;
+
+	# 出演者テーブル
+    $sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSIF . ' ( ' .
+        'seq int auto_increment, ' .
+        'name varchar(128) DEFAULT NULL, ' .
+        'name_f varchar(128) DEFAULT NULL, ' .
+        'name_p varchar(1024) DEFAULT NULL, ' .
+        'PRIMARY KEY (seq) )' );
+	$sth->execute;
+
+	# 出演者詳細テーブル
+	$sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSDT . ' ( ' .
+		'seq int auto_increment, ' .
+		'pg_key int DEFAULT NULL, ' .
+		'pg_subkey int DEFAULT  NULL, ' .
+		'person_key int DEFAULT  NULL, ' .
+		'role_key int DEFAULT  NULL, ' .
+		'ps_key int DEFAULT  NULL, ' .
+		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+		"dtime DATETIME DEFAULT '99991231235959', " .
+		'PRIMARY KEY (seq,ctime), ' .
+		'INDEX idx01 (pg_key,pg_subkey), ' .
+		'INDEX idx02 (person_key), ' .
+		'INDEX idx03 (role_key), ' .
+		'INDEX idx04 (ps_key) )' );
+	$sth->execute;
+
+	# 公開出演者テーブル
+    $sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSOPIF . ' ( ' .
+        'seq int auto_increment, ' .
+        'name varchar(128) DEFAULT NULL, ' .
+        'name_f varchar(128) DEFAULT NULL, ' .
+        'name_p varchar(1024) DEFAULT NULL, ' .
+        'PRIMARY KEY (seq) )' );
+	$sth->execute;
+
+	# 公開出演者詳細テーブル
+	$sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSOPDT . ' ( ' .
+		'seq int auto_increment, ' .
+		'pg_key int DEFAULT NULL, ' .
+		'pg_subkey int DEFAULT  NULL, ' .
+		'person_key int DEFAULT  NULL, ' .
+		'role_key int DEFAULT  NULL, ' .
+		'ps_key int DEFAULT  NULL, ' .
+		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+		"dtime DATETIME DEFAULT '99991231235959', " .
+		'PRIMARY KEY (seq,ctime), ' .
+		'INDEX idx01 (pg_key,pg_subkey), ' .
+		'INDEX idx02 (person_key), ' .
+		'INDEX idx03 (role_key), ' .
+		'INDEX idx04 (ps_key) )' );
+	$sth->execute;
+
+	$sth = $db->prepare(
+        "LOAD DATA LOCAL INFILE '$pg_role_master_f' " .
+        'INTO TABLE ' . $prefix . $RLMT . ' ' .
+        "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
+	$sth->execute;
+
+	$sth = $db->prepare(
+        "LOAD DATA LOCAL INFILE '$pg_person_status_master_f' " .
+        'INTO TABLE ' . $prefix . $PSMT . ' ' .
+        "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
+	$sth->execute;
+
+    $sth->finish();
+    db_disconnect( $dbobj );
+}
+
+sub error {
+    my (
+        $f,
+       ) = @_;
+    print $f . " not exist or unreadable\n";
+    exit;
+}
+
+main();
+exit;
+1;

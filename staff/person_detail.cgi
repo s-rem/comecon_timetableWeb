@@ -7,11 +7,14 @@ use warnings;
 use utf8;
 use CGI; 
 use CGI::Carp qw(fatalsToBrowser); 
+use File::Spec;
+use File::Basename;
 use SFCON::Register_db;
 binmode STDIN,  ":utf8";
 binmode STDOUT, ":utf8";
 
-require('../timetableCmn.pl');
+# 共通定義
+require( dirname(File::Spec->rel2abs($0)) '/../timetableCmn.pl');
 
 sub main {
     my $person_code = $ENV{'QUERY_STRING'};
@@ -125,13 +128,14 @@ sub dbGetPerson {
         $person_code,
        ) = @_;
     my $db = $dbobj->{'database'};
-    my $pgLcDt = $dbobj->prefix() . $LCDT;
-    my $pgNmMt = $dbobj->prefix() . $NMMT;
-    my $pgRlMt = $dbobj->prefix() . $RLMT;
-    my $pgPsMt = $dbobj->prefix() . $PSMT;
-    my $pgRnMt = $dbobj->prefix() . $RNMT;
-    my $pgPsIf = $dbobj->prefix() . $PSIF;
-    my $pgPsDt = $dbobj->prefix() . $PSDT;
+    my $prefix = $dbobj->prefix();
+    my $pgLcDt = $prefix . $LCDT;
+    my $pgNmMt = $prefix . $NMMT;
+    my $pgRlMt = $prefix . $RLMT;
+    my $pgPsMt = $prefix . $PSMT;
+    my $pgRnMt = $prefix . $RNMT;
+    my $pgPsIf = $prefix . $PSIF;
+    my $pgPsDt = $prefix . $PSDT;
 
     my $sth = $db->prepare(
         'SELECT a.start_time, a.end_time, b.room_name, c.pg_code, c.pg_name, ' .

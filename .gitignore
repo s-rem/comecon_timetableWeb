@@ -27,3 +27,6 @@ OLE
 upload/upload
 *~
 *.sw?
+memo.j
+tools/pg_person_info.csv
+tools/pg_person_open_info.csv

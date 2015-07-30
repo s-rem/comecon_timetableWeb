@@ -58,7 +58,7 @@ sub db_connect {
 }
 
 # DB切断
-sub db_dissconnect {
+sub db_disconnect {
     my (
         $dbobj,     # Register_dbオブジェクト
        ) = @_;

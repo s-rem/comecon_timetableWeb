@@ -10,19 +10,21 @@ use CGI::Carp qw(fatalsToBrowser);
 use Encode::Guess qw/ shiftjis euc-jp 7bit-jis /;
 use Encode qw/ decode encode /;
 use File::Copy;
+use File::Spec;
 use File::Basename;
 use SFCON::Register_db;
 use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::FmtJapan;
 
 # 共通定義
-require('../../timetableCmn.pl');
+my $Curdir = dirname(File::Spec->rel2abs($0));
+require( $Curdir . '/../../timetableCmn.pl');
 
 # 最終結果出力バッファ
 my $gs_print = '';
 
 # 定数
-my $upload_dir  = 'upload';      # 保存先のディレクトリ
+my $upload_dir  = $Curdir . '/upload';      # 保存先のディレクトリ
 
 # メイン処理
 sub main {
@@ -57,7 +59,7 @@ EOT
     registPerson2DB( $dbobj, $Sperson );
 
     print "<pte>" . $gs_print . "</pre>";
-    db_dissconnect( $dbobj );
+    db_disconnect( $dbobj );
 }
 
 # アップロードしたファイルをExcel-Bookとして読み込む
@@ -276,9 +278,10 @@ sub program_add{
        ) = @_;
 
     my $db = $dbobj->{database};
-    my $pgPsDt = $dbobj->prefix() . $PSDT;
-    my $pgLcDt = $dbobj->prefix() . $LCDT;
-    my $pgNmMt = $dbobj->prefix() . $NMMT;
+    my $prefix = $dbobj->prefix();
+    my $pgPsDt = $prefix . $PSDT;
+    my $pgLcDt = $prefix . $LCDT;
+    my $pgNmMt = $prefix . $NMMT;
     my $sth;
 
     $sth = $db->prepare(
@@ -400,9 +403,10 @@ sub time_add_db{
     print 'ADD ' . $start_time . ',' . $end_time . '<br/>';
 
     my $db = $dbobj->{database};
-    my $pgLcDt = $dbobj->prefix() . $LCDT;
-    my $pgNmMt = $dbobj->prefix() . $NMMT;
-    my $pgRnMt = $dbobj->prefix() . $RNMT;
+    my $prefix = $dbobj->prefix();
+    my $pgLcDt = $prefix . $LCDT;
+    my $pgNmMt = $prefix . $NMMT;
+    my $pgRnMt = $prefix . $RNMT;
 
     my $sth = $db->prepare(
         'INSERT INTO ' . $pgLcDt . 
