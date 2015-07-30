@@ -35,7 +35,6 @@ our $LCDT = 'pg_location_detail';
 our $NMMT = 'pg_name_master';
 our $RLMT = 'pg_role_master';
 our $PSMT = 'pg_person_status_master';
-our $RMMT = 'room_master';
 our $RNMT = 'room_name_master';
 our $PSIF = 'pg_person_info';
 our $PSDT = 'pg_person_detail';

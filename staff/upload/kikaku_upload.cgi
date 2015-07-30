@@ -396,36 +396,15 @@ sub time_add_db{
         $room_row,      # 表示順序
        ) = @_;
 
+    print 'ROOM: ' . $room_code . 'GAP: ' . $room_row . '<BR>';
+    print 'ADD ' . $start_time . ',' . $end_time . '<br/>';
+
     my $db = $dbobj->{database};
     my $pgLcDt = $dbobj->prefix() . $LCDT;
-    my $pgRmMt = $dbobj->prefix() . $RMMT;
-
-    my $sth = $db->prepare(
-        'SELECT ' .
-            'if ( ( select count(seq) from ' . $pgLcDt . ' ) = 0,1, ' .
-            '       ( if ( ( select MIN(seq) from ' . $pgLcDt . ' ) <> 1, ' .
-            '                1, ' .
-            '                MIN(seq + 1)' .
-            '            )' .
-            '       )' .
-            '   ) as seq_no ' .
-         'FROM ' . $pgLcDt .  ' WHERE' .
-         '  (seq_no + 1) NOT IN ( SELECT seq_no FROM seqtest ); ' .
-         '  AND room_key IN ( SELECT seq FROM ' . $pgRmMt .
-         '                       WHERE room_code = ?)' .
-         '  AND end_time > ? ' .
-         '  AND start_time < ? )'
-        );
-
-    my @row = $sth->fetchrow_array;
-    my $room_row_gap = $room_row;
-    print "ROOM: " . $room_code . "GAP: " . $room_row_gap . "<BR>";
-    print "ADD ".  $start_time .",". $end_time ."<br/>";
-    $sth->execute($room_code, $start_time, $end_time);
-
     my $pgNmMt = $dbobj->prefix() . $NMMT;
     my $pgRnMt = $dbobj->prefix() . $RNMT;
-    $sth = $db->prepare(
+
+    my $sth = $db->prepare(
         'INSERT INTO ' . $pgLcDt . 
         ' (pg_key, room_key, room_row, start_time, end_time) ' .
         'VALUES( ' .
@@ -436,13 +415,13 @@ sub time_add_db{
     my $stat = $sth->execute(
             $program_code,
             $room_code,
-            $room_row_gap, $start_time, $end_time);
-    if(!$stat){
+            $room_row, $start_time, $end_time);
+    if ( !$stat ) {
         print $sth->errstr;
-    } elsif ($stat == 0) {
+    } elsif ( $stat == 0 ) {
         print "No data inserted";
     } else {
-        printf("%s record inserted", $stat);
+        printf("%s record inserted", $stat );
     }
 }
 
