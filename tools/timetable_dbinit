@@ -28,71 +28,71 @@ sub main {
     my $prefix = $dbobj->prefix();
 
     # 既存のとおり、MyISAMにする
-	my $sth = $db->prepare("SET storage_engine=MYISAM;");
-	$sth->execute;
+    my $sth = $db->prepare("SET storage_engine=MYISAM;");
+    $sth->execute;
 
-	# 実施日時場所詳細テーブル
-	$sth = $db->prepare(
+    # 実施日時場所詳細テーブル
+    $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $LCDT . ' ( ' .
         'seq int auto_increment, ' .
-		'pg_key int DEFAULT NULL, ' .
-		'pg_subkey int DEFAULT  NULL, ' .
-		'start_time datetime DEFAULT  NULL, ' .
-		'end_time datetime DEFAULT  NULL, ' .
-		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
-		"dtime DATETIME DEFAULT '99991231235959', " .
-		'PRIMARY KEY (seq,ctime), ' .
-		'INDEX idx01 (pg_key,pg_subkey) )' );
-	$sth->execute;
+        'pg_key int DEFAULT NULL, ' .
+        'pg_subkey int DEFAULT  NULL, ' .
+        'start_time datetime DEFAULT  NULL, ' .
+        'end_time datetime DEFAULT  NULL, ' .
+        'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+        "dtime DATETIME DEFAULT '99991231235959', " .
+        'PRIMARY KEY (seq,ctime), ' .
+        'INDEX idx01 (pg_key,pg_subkey) )' );
+    $sth->execute;
 
-	# 企画名マスター
-	$sth = $db->prepare(
+    # 企画名マスター
+    $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $NMMT . ' ( ' .
-		'pg_key int auto_increment, ' .
-		'pg_code varchar(128) DEFAULT NULL, ' .
-		'pg_name varchar(128) DEFAULT  NULL, ' .
-		'pg_name_f varchar(128) DEFAULT  NULL, ' .
-		'pg_options varchar(128) DEFAULT  NULL, ' .
-		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
-		"dtime DATETIME DEFAULT '99991231235959', " .
-		'PRIMARY KEY (pg_key,ctime), ' .
-		'INDEX idx01 (pg_code) )' );
-	$sth->execute;
+        'pg_key int auto_increment, ' .
+        'pg_code varchar(128) DEFAULT NULL, ' .
+        'pg_name varchar(128) DEFAULT  NULL, ' .
+        'pg_name_f varchar(128) DEFAULT  NULL, ' .
+        'pg_options varchar(128) DEFAULT  NULL, ' .
+        'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+        "dtime DATETIME DEFAULT '99991231235959', " .
+        'PRIMARY KEY (pg_key,ctime), ' .
+        'INDEX idx01 (pg_code) )' );
+    $sth->execute;
 
-	# 企画関係者役割マスター
-	$sth = $db->prepare(
+    # 企画関係者役割マスター
+    $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $RLMT . ' ( ' .
-		'role_key int auto_increment, ' .
-		'role_code varchar(128) DEFAULT NULL, ' .
-		'role_name varchar(128) DEFAULT  NULL, ' .
-		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
-		"dtime DATETIME DEFAULT '99991231235959', " .
-		'PRIMARY KEY (role_key, ctime), ' .
-		'INDEX idx01 (role_code) )' );
-	$sth->execute;
+        'role_key int auto_increment, ' .
+        'role_code varchar(128) DEFAULT NULL, ' .
+        'role_name varchar(128) DEFAULT  NULL, ' .
+        'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+        "dtime DATETIME DEFAULT '99991231235959', " .
+        'PRIMARY KEY (role_key, ctime), ' .
+        'INDEX idx01 (role_code) )' );
+    $sth->execute;
 
-	# 出演者個人状態マスター
-	$sth = $db->prepare(
+    # 出演者個人状態マスター
+    $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSMT . ' ( ' .
-		'ps_key int auto_increment, ' .
-		'ps_code varchar(128) DEFAULT  NULL, ' .
-		'ps_name varchar(128) DEFAULT  NULL, ' .
-		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
-		"dtime DATETIME DEFAULT '99991231235959', " .
-		'PRIMARY KEY (ps_key,ctime) )' );
-	$sth->execute;
+        'ps_key int auto_increment, ' .
+        'ps_code varchar(128) DEFAULT  NULL, ' .
+        'ps_name varchar(128) DEFAULT  NULL, ' .
+        'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+        "dtime DATETIME DEFAULT '99991231235959', " .
+        'PRIMARY KEY (ps_key,ctime) )' );
+    $sth->execute;
 
-	# 部屋名のマスタ
-	$sth = $db->prepare(
+    # 部屋名のマスタ
+    $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $RNMT . ' ( ' .
-		'seq int auto_increment, ' .
-		'room_code varchar(128) DEFAULT NULL, ' .
-		'room_name varchar(128) DEFAULT  NULL, ' .
-		'room_options varchar(128) DEFAULT  NULL, ' .
-		'PRIMARY KEY (seq) )' );
-	$sth->execute;
+        'seq int auto_increment, ' .
+        'room_code varchar(128) DEFAULT NULL, ' .
+        'room_name varchar(128) DEFAULT  NULL, ' .
+        'room_options varchar(128) DEFAULT  NULL, ' .
+        'PRIMARY KEY (seq) )' );
+    $sth->execute;
 
-	# 出演者テーブル
+    # 出演者テーブル
     $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSIF . ' ( ' .
         'seq int auto_increment, ' .
@@ -100,27 +100,27 @@ sub main {
         'name_f varchar(128) DEFAULT NULL, ' .
         'name_p varchar(1024) DEFAULT NULL, ' .
         'PRIMARY KEY (seq) )' );
-	$sth->execute;
+    $sth->execute;
 
-	# 出演者詳細テーブル
-	$sth = $db->prepare(
+    # 出演者詳細テーブル
+    $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSDT . ' ( ' .
-		'seq int auto_increment, ' .
-		'pg_key int DEFAULT NULL, ' .
-		'pg_subkey int DEFAULT  NULL, ' .
-		'person_key int DEFAULT  NULL, ' .
-		'role_key int DEFAULT  NULL, ' .
-		'ps_key int DEFAULT  NULL, ' .
-		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
-		"dtime DATETIME DEFAULT '99991231235959', " .
-		'PRIMARY KEY (seq,ctime), ' .
-		'INDEX idx01 (pg_key,pg_subkey), ' .
-		'INDEX idx02 (person_key), ' .
-		'INDEX idx03 (role_key), ' .
-		'INDEX idx04 (ps_key) )' );
-	$sth->execute;
+        'seq int auto_increment, ' .
+        'pg_key int DEFAULT NULL, ' .
+        'pg_subkey int DEFAULT  NULL, ' .
+        'person_key int DEFAULT  NULL, ' .
+        'role_key int DEFAULT  NULL, ' .
+        'ps_key int DEFAULT  NULL, ' .
+        'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+        "dtime DATETIME DEFAULT '99991231235959', " .
+        'PRIMARY KEY (seq,ctime), ' .
+        'INDEX idx01 (pg_key,pg_subkey), ' .
+        'INDEX idx02 (person_key), ' .
+        'INDEX idx03 (role_key), ' .
+        'INDEX idx04 (ps_key) )' );
+    $sth->execute;
 
-	# 公開出演者テーブル
+    # 公開出演者テーブル
     $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSOPIF . ' ( ' .
         'seq int auto_increment, ' .
@@ -128,37 +128,48 @@ sub main {
         'name_f varchar(128) DEFAULT NULL, ' .
         'name_p varchar(1024) DEFAULT NULL, ' .
         'PRIMARY KEY (seq) )' );
-	$sth->execute;
+    $sth->execute;
 
-	# 公開出演者詳細テーブル
-	$sth = $db->prepare(
+    # 公開出演者詳細テーブル
+    $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSOPDT . ' ( ' .
-		'seq int auto_increment, ' .
-		'pg_key int DEFAULT NULL, ' .
-		'pg_subkey int DEFAULT  NULL, ' .
-		'person_key int DEFAULT  NULL, ' .
-		'role_key int DEFAULT  NULL, ' .
-		'ps_key int DEFAULT  NULL, ' .
-		'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
-		"dtime DATETIME DEFAULT '99991231235959', " .
-		'PRIMARY KEY (seq,ctime), ' .
-		'INDEX idx01 (pg_key,pg_subkey), ' .
-		'INDEX idx02 (person_key), ' .
-		'INDEX idx03 (role_key), ' .
-		'INDEX idx04 (ps_key) )' );
-	$sth->execute;
+        'seq int auto_increment, ' .
+        'pg_key int DEFAULT NULL, ' .
+        'pg_subkey int DEFAULT  NULL, ' .
+        'person_key int DEFAULT  NULL, ' .
+        'role_key int DEFAULT  NULL, ' .
+        'ps_key int DEFAULT  NULL, ' .
+        'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
+        "dtime DATETIME DEFAULT '99991231235959', " .
+        'PRIMARY KEY (seq,ctime), ' .
+        'INDEX idx01 (pg_key,pg_subkey), ' .
+        'INDEX idx02 (person_key), ' .
+        'INDEX idx03 (role_key), ' .
+        'INDEX idx04 (ps_key) )' );
+    $sth->execute;
 
-	$sth = $db->prepare(
-        "LOAD DATA LOCAL INFILE '$pg_role_master_f' " .
-        'INTO TABLE ' . $prefix . $RLMT . ' ' .
-        "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
-	$sth->execute;
+    # 固定値設定(現在時刻格納のため、1行づつ)
+    $sth = $db->prepare(
+        'INSERT INTO ' . $prefix . $RLMT . ' ' .
+        ' ( role_code, role_name ) VALUES( ?, ? )');
+    open( my $fh, '<', $pg_role_master_f );
+    while( my $line = <$fh> ) {
+        chomp($line);
+        my ( $code, $name ) = split(/,/, $line);
+        $sth->execute( $code, $name );
+    }
+    close( $fh );
 
-	$sth = $db->prepare(
-        "LOAD DATA LOCAL INFILE '$pg_person_status_master_f' " .
-        'INTO TABLE ' . $prefix . $PSMT . ' ' .
-        "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
-	$sth->execute;
+    $sth = $db->prepare(
+        'INSERT INTO ' . $prefix . $PSMT . ' ' .
+        ' ( ps_code, ps_name ) VALUES( ?, ? )');
+    open( $fh, '<', $pg_person_status_master_f );
+    while( my $line = <$fh> ) {
+        chomp($line);
+        my ( $code, $name ) = split(/,/, $line);
+        $sth->execute( $code, $name );
+    }
+    close( $fh );
 
     $sth->finish();
     db_disconnect( $dbobj );
