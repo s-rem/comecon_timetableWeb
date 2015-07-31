@@ -11,12 +11,16 @@ use SFCON::Register_db;
 our $PrgURL = 'http://www.comecon.com/aj?alias=p';
 our @SETime = (
     {               # 1日目
-        's' => 9,   # 開始時刻
-        'e' => 21,  # 終了時刻
+        's'  => 10,  # 開始時刻
+        'sm' => 0,   # 開始分
+        'e'  => 21,  # 終了時刻
+        'em' => 30,  # 終了分
     },
     {               # 2日目
-        's' => 9,
-        'e' => 20,
+        's'  => 9,
+        'sm' => 30,
+        'e' => 16,
+        'em' => 0,
     },
 );
 our @TrgDate = (

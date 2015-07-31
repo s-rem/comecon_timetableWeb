@@ -19,6 +19,7 @@ use Spreadsheet::ParseExcel::FmtJapan;
 # 共通定義
 my $Curdir = dirname(File::Spec->rel2abs($0));
 require( $Curdir . '/../../timetableCmn.pl');
+our ( @TrgDate, @SETime, );
 
 # 最終結果出力バッファ
 my $gs_print = '';
@@ -70,11 +71,14 @@ sub upload_excel {
     my $q  = CGI->new();
     my $fh = $q->upload('filename');
     my $temp_path = $q->tmpFileName($fh);
-    fileparse_set_fstype('MSDOS');   # WinIE用パス文字設定(File::Basename)
-    my $filename    = basename($fh);
+    fileparse_set_fstype('MSDOS');  # WinIE用パス文字設定(File::Basename)
+    my $filename = 'kikaku.xls';    # Debug用初期値
+    if ( $fh ) {
+        $filename    = basename($fh) | 'kikaku.xls';
+        close($fh);                      # アップロードしたファイルをclose
+    }
     my $upload_path = "$upload_dir/$filename";     # 保存先フルパス
-    move ($temp_path, $upload_path) or die $!;
-    close($fh);                      # アップロードしたファイルをclose
+    move ($temp_path, $upload_path) or die $! if ( -r $temp_path );
 
     my $excel = new Spreadsheet::ParseExcel;
     my $book = $excel->Parse($upload_path);
@@ -92,7 +96,7 @@ sub getSheet {
     my $person_sheet;
 
     for my $sheet ($book->worksheets()){
-        my $sheetname = decode('utf8',encode('utf8',$sheet->get_name));
+        my $sheetname = encode('utf8',$sheet->get_name);
         print $sheetname;
         if( $sheetname eq '企画シート'){
             $program_sheet = $sheet;
@@ -363,14 +367,15 @@ sub time_calc{
 
     $date =~ s/\//-/g;
 
-    my($start_hour,$start_min,$end_hour,$end_min);
-    if($date eq "2015-08-29"){
-        ($start_hour,$start_min,$end_hour,$end_min) = (10,0,21,30);
-    } elsif($date eq "2015-08-30"){
-        ($start_hour,$start_min,$end_hour,$end_min) = (9,30,16,0);
+    my $seTime;
+    if( $date eq $TrgDate[0] ) {
+        $seTime = $SETime[0];
+    } elsif($date eq $TrgDate[1]){
+        $seTime = $SETime[1];
     } else {
         return ();
     }
+    my ( $start_hour, $start_min, $end_hour, $end_min ) = ( $seTime->{'s'}, $seTime->{'sm'}, $seTime->{'e'}, $seTime->{'em'} );
     $stat = ($hour, $min) = $start_text =~/([0-9]+):([0-9]+)/;
     print $stat . " [" . $hour . "][" . $min ."]";
     if($stat == 2){
