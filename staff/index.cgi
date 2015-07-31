@@ -14,7 +14,7 @@ binmode STDIN,  ":utf8";
 binmode STDOUT, ":utf8";
 
 # 共通定義
-require( dirname(File::Spec->rel2abs($0)) '/../timetableCmn.pl');
+require( dirname(File::Spec->rel2abs($0)) . '/../timetableCmn.pl');
 our(  $PrgURL, @SETime, @TrgDate, $Tspan, $Maxwidth, $Roomwidth );
 
 # 定数定義

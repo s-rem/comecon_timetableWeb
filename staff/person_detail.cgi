@@ -14,7 +14,7 @@ binmode STDIN,  ":utf8";
 binmode STDOUT, ":utf8";
 
 # 共通定義
-require( dirname(File::Spec->rel2abs($0)) '/../timetableCmn.pl');
+require( dirname(File::Spec->rel2abs($0)) . '/../timetableCmn.pl');
 
 sub main {
     my $person_code = $ENV{'QUERY_STRING'};

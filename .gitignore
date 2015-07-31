@@ -24,7 +24,7 @@ Spreadsheet
 Crypt
 Digest
 OLE
-upload/upload
+staff/upload/upload/*
 *~
 *.sw?
 memo.j
