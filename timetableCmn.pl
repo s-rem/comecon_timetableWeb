@@ -23,9 +23,10 @@ our @SETime = (
         'em' => 0,
     },
 );
+our $TrgYear='2015-';
 our @TrgDate = (
-    '2015-08-29',
-    '2015-08-30',
+    $TrgYear . '08-29',
+    $TrgYear . '08-30',
 );
 our $Tspan=15;
 our $Maxwidth = 1600;

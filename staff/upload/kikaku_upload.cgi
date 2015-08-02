@@ -15,17 +15,21 @@ use File::Basename;
 use SFCON::Register_db;
 use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::FmtJapan;
+binmode STDIN, ':utf8';
+binmode STDOUT, ':utf8';
 
 # 共通定義
 my $Curdir = dirname(File::Spec->rel2abs($0));
 require( $Curdir . '/../../timetableCmn.pl');
-our ( @TrgDate, @SETime, );
+our ( $TrgYear, @TrgDate, @SETime, );
 
 # 最終結果出力バッファ
 my $gs_print = '';
 
 # 定数
 my $upload_dir  = $Curdir . '/upload';      # 保存先のディレクトリ
+my $PrgSname = '企画シート';
+my $PrsSname = '出演者シート';
 
 # メイン処理
 sub main {
@@ -96,16 +100,17 @@ sub getSheet {
     my $person_sheet;
 
     for my $sheet ($book->worksheets()){
-        my $sheetname = encode('utf8',$sheet->get_name);
-        print $sheetname;
-        if( $sheetname eq '企画シート'){
+        my $sheetname = $sheet->get_name;
+        print '[' . $sheetname . ']';
+        if ( $sheetname eq $PrgSname ) {
             $program_sheet = $sheet;
             print "match<br>";
         }
-        if( $sheetname eq '出演者シート'){
+        if ( $sheetname eq $PrsSname ) {
             my $person_sheet = $sheet;
-            print "match<br>";
+            print 'match<br>';
         }
+        print "\n";
     }
     return ( $program_sheet, $person_sheet );
 }
@@ -163,38 +168,37 @@ sub registProgram2DB {
     for(my $row=1; $row<=$maxRow; $row++) {
         my $room_row = 0;
         if ($pHash->{'c_room_row'}) {
-            $room_row = encode('utf8',
-                            getExcelVal($sheet,$row,$pHash->{'c_room_row'}));
+            $room_row = getExcelVal($sheet,$row,$pHash->{'c_room_row'});
         }
         program_add($dbobj,
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_p_code'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_name'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_name_f'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_status'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_place_code'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_date'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_s_time'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_e_time'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_date2'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_s_time2'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_e_time2'})),
+            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            getExcelVal($sheet,$row,$pHash->{'c_name'}),
+            getExcelVal($sheet,$row,$pHash->{'c_name_f'}),
+            getExcelVal($sheet,$row,$pHash->{'c_status'}),
+            getExcelVal($sheet,$row,$pHash->{'c_place_code'}),
+            getExcelVal($sheet,$row,$pHash->{'c_date'}),
+            getExcelVal($sheet,$row,$pHash->{'c_s_time'}),
+            getExcelVal($sheet,$row,$pHash->{'c_e_time'}),
+            getExcelVal($sheet,$row,$pHash->{'c_date2'}),
+            getExcelVal($sheet,$row,$pHash->{'c_s_time2'}),
+            getExcelVal($sheet,$row,$pHash->{'c_e_time2'}),
             $room_row
         );
         person_search($dbobj,
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_p_code'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_staff'})),
+            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            getExcelVal($sheet,$row,$pHash->{'c_staff'}),
             '-','','-','PR', 0);
         person_search($dbobj,
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_p_code'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_staff'})),
+            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            getExcelVal($sheet,$row,$pHash->{'c_staff'}),
             '-','','-','PR', 1);
         person_search($dbobj,
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_p_code'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_owner'})),
+            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            getExcelVal($sheet,$row,$pHash->{'c_owner'}),
             '-','','-','PO', 0);
         person_search($dbobj,
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_p_code'})),
-            encode('utf8', getExcelVal($sheet,$row,$pHash->{'c_owner'})),
+            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            getExcelVal($sheet,$row,$pHash->{'c_owner'}),
             '-','','-','PO', 1);
     }
     print "</TABLE>\n";
@@ -225,18 +229,18 @@ sub registPerson2DB {
             print "$col:$val ";
         }
         person_search($dbobj,
-            encode('utf8', getExcelVal($sheet,$row,0)),
-            encode('utf8', getExcelVal($sheet,$row,3)),
-            encode('utf8', getExcelVal($sheet,$row,4)),
-            encode('utf8', getExcelVal($sheet,$row,9)),
-            encode('utf8', getExcelVal($sheet,$row,8)),
+            getExcelVal($sheet,$row,0),
+            getExcelVal($sheet,$row,3),
+            getExcelVal($sheet,$row,4),
+            getExcelVal($sheet,$row,9),
+            getExcelVal($sheet,$row,8),
             'PP', 0);
         person_search($dbobj,
-            encode('utf8', getExcelVal($sheet,$row,0)),
-            encode('utf8', getExcelVal($sheet,$row,21)),
-            encode('utf8', getExcelVal($sheet,$row,22)),
-            encode('utf8', getExcelVal($sheet,$row,9)),
-            encode('utf8', getExcelVal($sheet,$row,8)),
+            getExcelVal($sheet,$row,0),
+            getExcelVal($sheet,$row,21),
+            getExcelVal($sheet,$row,22),
+            getExcelVal($sheet,$row,9),
+            getExcelVal($sheet,$row,8),
             'PP', 1);
         print "\n";
     }
@@ -251,7 +255,7 @@ sub getExcelVal{
         $col,       # 列番号
        ) = @_;
     my $cell = $sheet->{"Cells"}[$row][$col];
-    my $val = ($cell) ? decode('utf8',encode('utf8',$cell->Value))
+    my $val = ($cell) ? $cell->Value
                       : "";
     return $val;
 }
@@ -366,11 +370,15 @@ sub time_calc{
     my $min;
 
     $date =~ s/\//-/g;
+    unless ( scalar( split(/-/, $date) ) == 3 ) {
+        # 企画シート上 年が省略されていることもある
+        $date = $TrgYear . $date;
+    }
 
     my $seTime;
     if( $date eq $TrgDate[0] ) {
         $seTime = $SETime[0];
-    } elsif($date eq $TrgDate[1]){
+    } elsif($date eq $TrgDate[1]) {
         $seTime = $SETime[1];
     } else {
         return ();
@@ -448,13 +456,6 @@ sub person_search {
         $openflg,       # 公開情報登録か否か
        ) = @_;
 
-    # 既にutf8-decode済のはずなので以下は不要
-    #   utf8::decode($name);
-    #   utf8::decode($name_f);
-    #   utf8::decode($p_status);
-    #   utf8::decode($p_guest);
-    #   utf8::decode($p_role);
-
     my $gsmk = $openflg ? 'O' : 'S';
 
     # 最終出力バッファに受け取った値を追加書き込み
@@ -478,8 +479,6 @@ sub person_search {
     $sth->execute($p_role);
     while(@row = $sth->fetchrow_array) {
         $role_key = $row[0];
-        # 既にutf8-decode済のはずなので以下は不要
-        # utf8::decode($row[1]);
         $role_name = $row[1];
     }
 
@@ -502,10 +501,9 @@ sub person_search {
     }
 
     # 名前と役割の分割
-    my $role;
     $name =~ tr/\(（\[/\t\t\t/;
     $name =~ s/\]|\)|）|\s|　//g;
-    ($name, $role) = split(/\t+/,$name);
+    ($name) = split(/\t+/,$name, 1);
 
     # 名前ふりがなの取り出し
     $name_f =~ tr/あ-ん/ア-ン/;
@@ -525,15 +523,6 @@ sub person_search {
     my $match = 0;
     while(@row = $sth->fetchrow_array) {
         $match ++;
-        # 意味がわからん
-        # my $row1 = $row[0];
-        # utf8::decode($row[1]);
-        # utf8::decode($row[2]);
-        # utf8::decode($row[3]);
-        # my $row2 = $row[1];
-        # my $row3 = $row[2];
-        # my $row4 = $row[3];
-
         # 取得した内容を最終出力バッファに追加書き込み
         $gs_print .= sprintf(
                 "FULL MATCH:\t%s\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
@@ -550,15 +539,6 @@ sub person_search {
         $sth->execute($name_f, $name);
         while(@row = $sth->fetchrow_array) {
             $match ++;
-            # 意味がわからん
-            # my $row1 = $row[0];
-            # utf8::decode($row[1]);
-            # utf8::decode($row[2]);
-            # utf8::decode($row[3]);
-            # my $row2 = $row[1];
-            # my $row3 = $row[2];
-            # my $row4 = $row[3];
-        
             # 取得した内容を最終出力バッファに追加書き込み
             $gs_print .= sprintf(
                     "SEMI MATCH:\t%s\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
@@ -571,8 +551,8 @@ sub person_search {
         # 取得失敗を最終出力バッファに追加書き込み
         $gs_print .= sprintf(
                 '<font color="red">[' . $gsmk . ']NO MATCH</font>:' . 
-                    "\t%s\t----\t%s\t%s\t%s<BR>\n",
-                $p_code, $name, $name_f, $role
+                    "\t%s\t----\t%s\t%s<BR>\n",
+                $p_code, $name, $name_f
             );
         if($name_f eq '' or $name_f eq '-'){
             $name_f = '-' . $name;
@@ -588,8 +568,8 @@ sub person_search {
         # 取得失敗を最終出力バッファに追加書き込み
         $gs_print .= sprintf(
                 '<font color="red">[' . $gsmk . ']TOO MATCH</font>:' .
-                    "\t%s\t----\t%s\t%s\t%s<BR>\n",
-                $p_code, $name, $name_f, $role
+                    "\t%s\t----\t%s\t%s<BR>\n",
+                $p_code, $name, $name_f
             );
     }
     else { # 一件だけ見つかっていたら
