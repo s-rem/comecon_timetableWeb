@@ -26,8 +26,24 @@ sub main {
     my $dbobj = db_connect();
     my $db = $dbobj->{'database'};
     my $prefix = $dbobj->prefix();
+    my $sth;
 
-	my $sth = $db->prepare(
+    # 不安なので一旦対象テーブルを削除して再作成
+    #   部屋名のマスタ
+    foreach my $tname ( $RNMT, ) {
+        $sth = $db->prepare( 'DROP TABLE IF EXISTS ' . $prefix . $tname );
+        $sth->execute;
+    }
+
+    $sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $RNMT . ' ( ' .
+        'seq int auto_increment, ' .
+        'room_code varchar(128) DEFAULT NULL, ' .
+        'room_name varchar(128) DEFAULT  NULL, ' .
+        'room_options varchar(128) DEFAULT  NULL, ' .
+        'PRIMARY KEY (seq) )' );
+    $sth->execute;
+	$sth = $db->prepare(
         "LOAD DATA LOCAL INFILE '$room_name_master_f' " .
         'INTO TABLE ' . $prefix . $RNMT . ' ' .
         "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );

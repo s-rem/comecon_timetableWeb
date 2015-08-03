@@ -30,6 +30,7 @@ my $gs_print = '';
 my $upload_dir  = $Curdir . '/upload';      # 保存先のディレクトリ
 my $PrgSname = '企画シート';
 my $PrsSname = '出演者シート';
+my $DEBUGFLG = 0;
 
 # メイン処理
 sub main {
@@ -63,7 +64,7 @@ EOT
     # 出演者シート解析&DB追加(経過表示含む)
     registPerson2DB( $dbobj, $Sperson );
 
-    print "<pte>" . $gs_print . "</pre>";
+    print "<pte>\n$gs_print\n</pre>\n</body></html>\n" if $DEBUGFLG;
     db_disconnect( $dbobj );
 }
 
@@ -101,16 +102,16 @@ sub getSheet {
 
     for my $sheet ($book->worksheets()){
         my $sheetname = $sheet->get_name;
-        print '[' . $sheetname . ']';
+        print '[' . $sheetname . ']' if $DEBUGFLG;
         if ( $sheetname eq $PrgSname ) {
             $program_sheet = $sheet;
-            print "match<br>";
+            print 'match<br>' if $DEBUGFLG;
         }
         if ( $sheetname eq $PrsSname ) {
-            my $person_sheet = $sheet;
-            print 'match<br>';
+            $person_sheet = $sheet;
+            print 'match<br>' if $DEBUGFLG;
         }
-        print "\n";
+        print "\n" if $DEBUGFLG;
     }
     return ( $program_sheet, $person_sheet );
 }
@@ -140,17 +141,16 @@ sub analyzeSprogram {
     );
     my $pHash = {};
 
-    print "<pre>\n";
+    print "<pre>\n" if $DEBUGFLG;
     my $maxCol = $sheet->{"MaxCol"};
     for( my $col=0; $col<=$maxCol; $col++) {
         my $val = getExcelVal($sheet,0,$col);
         if ( exists( $coltable{$val} ) ) {
             $pHash->{$coltable{$val}} = $col;
-            print "$col:$val ";
+            print "$col:$val " if $DEBUGFLG;
         }
     }
-    print "\n";
-    print "</pre>\n";
+    print "\n</pre>\n" if $DEBUGFLG;
 
     return $pHash;
 }
@@ -187,19 +187,19 @@ sub registProgram2DB {
         person_search($dbobj,
             getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
             getExcelVal($sheet,$row,$pHash->{'c_staff'}),
-            '-','','-','PR', 0);
+            '-', '', 'PR', 0);
         person_search($dbobj,
             getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
             getExcelVal($sheet,$row,$pHash->{'c_staff'}),
-            '-','','-','PR', 1);
+            '-', '', 'PR', 1);
         person_search($dbobj,
             getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
             getExcelVal($sheet,$row,$pHash->{'c_owner'}),
-            '-','','-','PO', 0);
+            '-', '', 'PO', 0);
         person_search($dbobj,
             getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
             getExcelVal($sheet,$row,$pHash->{'c_owner'}),
-            '-','','-','PO', 1);
+            '-', '', 'PO', 1);
     }
     print "</TABLE>\n";
 }
@@ -213,38 +213,38 @@ sub registPerson2DB {
         $sheet,     # 出演者シートオブジェクト
        ) = @_;
 
-    print "<pre>";
+    print "<pre>" if $DEBUGFLG;
 
     my $maxRow = $sheet->{"MaxRow"};
     my $maxCol = $sheet->{"MaxCol"};
 
     for(my $row=1; $row<=$maxRow; $row++) {
-        print $row."  ";
-        for(my $col=0; $col<=$maxCol; $col++) {
-            my $cell = $sheet->{"Cells"}[$row][$col];
-            my $val = "";
-            if ($cell) {
-                $val = $cell->Value;
+        if ( $DEBUGFLG ) {
+            print $row."  ";
+            for(my $col=0; $col<=$maxCol; $col++) {
+                my $cell = $sheet->{"Cells"}[$row][$col];
+                my $val = "";
+                if ($cell) {
+                    $val = $cell->Value;
+                }
+                print "$col:$val ";
             }
-            print "$col:$val ";
+            print "\n";
         }
         person_search($dbobj,
             getExcelVal($sheet,$row,0),
             getExcelVal($sheet,$row,3),
             getExcelVal($sheet,$row,4),
             getExcelVal($sheet,$row,9),
-            getExcelVal($sheet,$row,8),
             'PP', 0);
         person_search($dbobj,
             getExcelVal($sheet,$row,0),
             getExcelVal($sheet,$row,21),
             getExcelVal($sheet,$row,22),
             getExcelVal($sheet,$row,9),
-            getExcelVal($sheet,$row,8),
             'PP', 1);
-        print "\n";
     }
-    print "</pre>";
+    print "</pre>" if $DEBUGFLG;
 }
 
 # Excelシートオブジェクトから値を得る
@@ -288,9 +288,16 @@ sub program_add{
     my $db = $dbobj->{database};
     my $prefix = $dbobj->prefix();
     my $pgPsDt = $prefix . $PSDT;
+    my $pgPsOpDt = $prefix . $PSOPDT;
     my $pgLcDt = $prefix . $LCDT;
     my $pgNmMt = $prefix . $NMMT;
     my $sth;
+
+    $sth = $db->prepare(
+        'DELETE FROM ' . $pgPsOpDt . ' WHERE pg_key IN ' .
+        '(SELECT pg_key FROM ' . $pgNmMt . ' WHERE pg_code = ?)'
+        );
+    $sth->execute($p_code);
 
     $sth = $db->prepare(
         'DELETE FROM ' . $pgPsDt . ' WHERE pg_key IN ' .
@@ -299,7 +306,7 @@ sub program_add{
     $sth->execute($p_code);
 
     $sth = $db->prepare(
-        'DELETE FROM ' . $pgLcDt . 'WHERE pg_key IN ' .
+        'DELETE FROM ' . $pgLcDt . ' WHERE pg_key IN ' .
         '(SELECT pg_key FROM ' . $pgNmMt . ' WHERE pg_code = ?)'
         );
     $sth->execute($p_code);
@@ -344,13 +351,17 @@ sub time_add{
     my $etime;
 
     print '<td><font size = "-1">';
-    if(($stime, $etime) = time_calc($date1, $start_time1, $end_time1)) {
-        time_add_db($dbobj,
+    if ( $room_code ) {
+        if(($stime, $etime) = time_calc($date1, $start_time1, $end_time1)) {
+            time_add_db($dbobj,
                     $program_code, $room_code, $stime, $etime, $room_row);
-    }
-    if(($stime, $etime) = time_calc($date2, $start_time2, $end_time2)) {
-        time_add_db($dbobj,
+        }
+        if(($stime, $etime) = time_calc($date2, $start_time2, $end_time2)) {
+            time_add_db($dbobj,
                     $program_code, $room_code, $stime, $etime, $room_row);
+        }
+    } else {
+        print "room_code undefined";
     }
     print"</font></td>\n";
 }
@@ -369,8 +380,10 @@ sub time_calc{
     my $hour;
     my $min;
 
+    return () unless $date;
+
     $date =~ s/\//-/g;
-    unless ( scalar( split(/-/, $date) ) == 3 ) {
+    unless ( (split(/-/, $date, 1))[0] eq $TrgYear ) {
         # 企画シート上 年が省略されていることもある
         $date = $TrgYear . $date;
     }
@@ -451,7 +464,6 @@ sub person_search {
         $name,          # 出演者名前
         $name_f,        # 出演者名前ふりがな
         $p_status,      # 出演ステータス
-        $p_guest,       # ゲスト申請
         $p_role,        # 役割コード PR:担当スタッフ PO:申込者 PP:出演者
         $openflg,       # 公開情報登録か否か
        ) = @_;
@@ -460,8 +472,8 @@ sub person_search {
 
     # 最終出力バッファに受け取った値を追加書き込み
     $gs_print .= sprintf(
-        '<font color="blue">[' . $gsmk . ']CHECK</font>:' .
-        "\t%s\t----\t%s\t%s\t%s<BR>\n",
+        '<font color="blue">' .
+        "[$gsmk]CHECK</font>:\t%s\t----\t%s\t%s\t%s<BR>\n",
          $p_code, $name, $name_f, $p_role);
 
     my $db = $dbobj->{database};
@@ -471,22 +483,22 @@ sub person_search {
     # 役割コードで役割マスタを検索してrole_keyとrole_nameを得る
     my $pgRlMt = $dbobj->prefix() . $RLMT;
     my $role_key;
-    my  $role_name;
+    my $role_name;
     $sth = $db->prepare(
             'SELECT role_key, role_name FROM ' . $pgRlMt .
             ' WHERE role_code = ?'
         );
     $sth->execute($p_role);
     while(@row = $sth->fetchrow_array) {
-        $role_key = $row[0];
-        $role_name = $row[1];
+        $role_key =  $row[0];   # role_keyは数値
+        $role_name = decode( 'utf8', $row[1] );
     }
 
     # 出演ステータスでステータスマスタを検索して、sutatus_keyを得る
     my $pgPsMt = $dbobj->prefix() . $PSMT;
     my $status_key = 0;
     $sth = $db->prepare(
-            'SELECT ps_key, ps_code FROM ' . $pgPsMt . ' WHERE ps_name = ?'
+            'SELECT ps_key FROM ' . $pgPsMt . ' WHERE ps_name = ?'
         );
     $sth->execute($p_status);
     while(@row = $sth->fetchrow_array) {
@@ -495,17 +507,17 @@ sub person_search {
     if($status_key == 0 && $p_status ne ''){
         # キーが見つからなかったらエラーを最終出力バッファに追加書き込み
         $gs_print .= sprintf(
-            '<font color="red">Person status not found: %s</font><BR>' . "\n",
-            $p_status
-        );
+            '<font color="red">' .
+            "[$gsmk]Person status not found: %s</font><BR>\n",
+            $p_status);
     }
 
-    # 名前と役割の分割
+    # 名前調整
     $name =~ tr/\(（\[/\t\t\t/;
     $name =~ s/\]|\)|）|\s|　//g;
     ($name) = split(/\t+/,$name, 1);
 
-    # 名前ふりがなの取り出し
+    # 名前ふりがな調整
     $name_f =~ tr/あ-ん/ア-ン/;
     $name_f =~ tr/\(（/\t\t/;
     $name_f =~ s/\)|）|\s|　//g;
@@ -523,41 +535,49 @@ sub person_search {
     my $match = 0;
     while(@row = $sth->fetchrow_array) {
         $match ++;
+        $person_id = $row[0];   # seqは数値
         # 取得した内容を最終出力バッファに追加書き込み
         $gs_print .= sprintf(
-                "FULL MATCH:\t%s\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
-                $role_name, $p_code, $row[0], $row[1], $row[2], $row[3]
+                "[$gsmk]FULL MATCH:\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
+                $role_name, $p_code, $person_id,
+                decode('utf8', $row[1]),
+                decode('utf8', $row[2]),
+                decode('utf8', $row[3])
             );
-        $person_id = $row[0];
     }
     if( $match == 0) { # 見つからなかったら
         # 名前 or 名前ふりがなで出演者情報を検索して、person_idを得る
         $sth = $db->prepare(
                 'SELECT seq, name, name_f, name_p FROM ' . $pgPsIf .
-                ' WHERE name_f = ? AND name = ?'
+                ' WHERE name_f = ? OR name = ?'
             );
         $sth->execute($name_f, $name);
         while(@row = $sth->fetchrow_array) {
             $match ++;
+            $person_id = $row[0];   # seqは数値
             # 取得した内容を最終出力バッファに追加書き込み
             $gs_print .= sprintf(
-                    "SEMI MATCH:\t%s\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
-                    $role_name, $p_code, $row[0], $row[1], $row[2], $row[3]
+                    "[$gsmk]SEMI MATCH:\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
+                    $role_name, $p_code, $person_id,
+                    decode('utf8', $row[1]),
+                    decode('utf8', $row[2]),
+                    decode('utf8', $row[3])
                 );
-            $person_id = $row[0];
         }
     }
+    my $wkname = defined($name) ? $name : '';
+    my $wkname_f = defined($name_f) ? $name_f : '';
     if ( $match == 0 ) { # それでも見つからなかったら
         # 取得失敗を最終出力バッファに追加書き込み
         $gs_print .= sprintf(
-                '<font color="red">[' . $gsmk . ']NO MATCH</font>:' . 
-                    "\t%s\t----\t%s\t%s<BR>\n",
-                $p_code, $name, $name_f
+                '<font color="red">' .
+                "[$gsmk]NO MATCH</font>:\t%s\t----\t%s\t%s<BR>\n",
+                $p_code, $wkname, $wkname_f
             );
-        if($name_f eq '' or $name_f eq '-'){
-            $name_f = '-' . $name;
+        if($wkname_f eq '' or $wkname_f eq '-'){
+            $name_f = '-' . $wkname;
         }
-        if($name ne '' and $name ne '-'){
+        if($wkname ne '' and $wkname ne '-'){
             # 新たに出演者情報を登録して、出演者を登録
             $person_id = person_info_add($dbobj, $name, $name_f, $openflg);
             person_add($dbobj, $p_code, $person_id, $role_key, $status_key,
@@ -569,16 +589,15 @@ sub person_search {
         $gs_print .= sprintf(
                 '<font color="red">[' . $gsmk . ']TOO MATCH</font>:' .
                     "\t%s\t----\t%s\t%s<BR>\n",
-                $p_code, $name, $name_f
+                $p_code, $wkname, $wkname_f
             );
     }
     else { # 一件だけ見つかっていたら
            #    ($matchは単調増加なので、$match == 1 は省略
         # 取得した内容を最終出力バッファに追加書き込み
         $gs_print .= sprintf(
-                "[$gsmk]ONE MATCH:\t%s\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
-                $role_key, $p_code, $name, $name_f, $p_status, $status_key,
-                $p_guest
+                "[$gsmk]ONE MATCH:\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
+                $role_key, $p_code, $wkname, $wkname_f, $p_status, $status_key
             );
         # 出演者を登録
         person_add($dbobj, $p_code, $person_id, $role_key, $status_key,
@@ -629,7 +648,8 @@ sub person_info_add {
     $pgPsIf .= $openflg ? $PSOPIF : $PSIF;
 
     my $sth = $db->prepare(
-            'INSERT INTO ' . $pgPsIf . ' (name, name_f) VALUES(?, ?)'
+            'INSERT INTO ' . $pgPsIf . ' (name, name_f, name_p) ' .
+            'VALUES(?, ?, "")'
         );
     $sth->execute($name, $name_f);
 

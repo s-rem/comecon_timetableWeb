@@ -26,13 +26,37 @@ sub main {
     my $dbobj = db_connect();
     my $db = $dbobj->{'database'};
     my $prefix = $dbobj->prefix();
+    my $sth;
 
-	my $sth = $db->prepare(
+    # 不安なので一旦対象テーブルを削除して再作成
+    #   出演者テーブル 公開出演者テーブル
+    foreach my $tname ( $PSIF, $PSOPIF, ) {
+        $sth = $db->prepare( 'DROP TABLE IF EXISTS ' . $prefix . $tname );
+        $sth->execute;
+    }
+
+    $sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSIF . ' ( ' .
+        'seq int auto_increment, ' .
+        'name varchar(128) DEFAULT NULL, ' .
+        'name_f varchar(128) DEFAULT NULL, ' .
+        'name_p varchar(1024) DEFAULT NULL, ' .
+        'PRIMARY KEY (seq) )' );
+    $sth->execute;
+	$sth = $db->prepare(
         "LOAD DATA LOCAL INFILE '$person_info_f' " .
         'INTO TABLE ' . $prefix . $PSIF . ' ' .
         "FIELDS TERMINATED BY ',' ENCLOSED BY '\"';" );
 	$sth->execute;
 
+    $sth = $db->prepare(
+        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSOPIF . ' ( ' .
+        'seq int auto_increment, ' .
+        'name varchar(128) DEFAULT NULL, ' .
+        'name_f varchar(128) DEFAULT NULL, ' .
+        'name_p varchar(1024) DEFAULT NULL, ' .
+        'PRIMARY KEY (seq) )' );
+    $sth->execute;
 	$sth = $db->prepare(
         "LOAD DATA LOCAL INFILE '$person_open_info_f' " .
         'INTO TABLE ' . $prefix . $PSOPIF . ' ' .

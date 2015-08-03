@@ -14,7 +14,7 @@ my $Curdir = dirname(File::Spec->rel2abs($0));
 require( $Curdir . '/../timetableCmn.pl');
 
 # テーブル名定数
-our ( $LCDT, $NMMT, $RLMT, $PSMT, $RNMT, $PSIF, $PSDT, $PSOPIF, $PSOPDT, );
+our ( $LCDT, $NMMT, $RLMT, $PSMT, $RNMT, $PSDT, $PSOPDT, );
 
 sub main {
     my $pg_role_master_f            = $Curdir .'/pg_role_master.csv';
@@ -26,9 +26,16 @@ sub main {
     my $dbobj = db_connect();
     my $db = $dbobj->{'database'};
     my $prefix = $dbobj->prefix();
+    my $sth;
+
+    # 不安なので一旦対象テーブルを削除
+    foreach my $tname (( $LCDT, $NMMT, $RLMT, $PSMT, $PSDT, $PSOPDT, )) {
+        $sth = $db->prepare( 'DROP TABLE IF EXISTS ' . $prefix . $tname );
+        $sth->execute;
+    }
 
     # 既存のとおり、MyISAMにする
-    my $sth = $db->prepare("SET storage_engine=MYISAM;");
+    $sth = $db->prepare("SET storage_engine=MYISAM;");
     $sth->execute;
 
     # 実施日時場所詳細テーブル
@@ -37,6 +44,8 @@ sub main {
         'seq int auto_increment, ' .
         'pg_key int DEFAULT NULL, ' .
         'pg_subkey int DEFAULT  NULL, ' .
+        'room_key  int NOT NULL, ' .
+        'room_row  int NOT NULL, ' .
         'start_time datetime DEFAULT  NULL, ' .
         'end_time datetime DEFAULT  NULL, ' .
         'ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, ' .
@@ -82,26 +91,6 @@ sub main {
         'PRIMARY KEY (ps_key,ctime) )' );
     $sth->execute;
 
-    # 部屋名のマスタ
-    $sth = $db->prepare(
-        'CREATE TABLE IF NOT EXISTS ' . $prefix . $RNMT . ' ( ' .
-        'seq int auto_increment, ' .
-        'room_code varchar(128) DEFAULT NULL, ' .
-        'room_name varchar(128) DEFAULT  NULL, ' .
-        'room_options varchar(128) DEFAULT  NULL, ' .
-        'PRIMARY KEY (seq) )' );
-    $sth->execute;
-
-    # 出演者テーブル
-    $sth = $db->prepare(
-        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSIF . ' ( ' .
-        'seq int auto_increment, ' .
-        'name varchar(128) DEFAULT NULL, ' .
-        'name_f varchar(128) DEFAULT NULL, ' .
-        'name_p varchar(1024) DEFAULT NULL, ' .
-        'PRIMARY KEY (seq) )' );
-    $sth->execute;
-
     # 出演者詳細テーブル
     $sth = $db->prepare(
         'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSDT . ' ( ' .
@@ -118,16 +107,6 @@ sub main {
         'INDEX idx02 (person_key), ' .
         'INDEX idx03 (role_key), ' .
         'INDEX idx04 (ps_key) )' );
-    $sth->execute;
-
-    # 公開出演者テーブル
-    $sth = $db->prepare(
-        'CREATE TABLE IF NOT EXISTS ' . $prefix . $PSOPIF . ' ( ' .
-        'seq int auto_increment, ' .
-        'name varchar(128) DEFAULT NULL, ' .
-        'name_f varchar(128) DEFAULT NULL, ' .
-        'name_p varchar(1024) DEFAULT NULL, ' .
-        'PRIMARY KEY (seq) )' );
     $sth->execute;
 
     # 公開出演者詳細テーブル
