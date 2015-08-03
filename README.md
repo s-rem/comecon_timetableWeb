@@ -2,13 +2,14 @@
 # 米魂 企画タイムテーブルCGI
 
 ## Web機能は以下の3つ  
+(デプロイ先が、www.comecon.sakura.ne.jpの <WebHome>/come_timetable の場合)
 #### 公開タイムテーブル  
-    http://www.comecon.sakura.ne.jp/timetable/?X  
+    http://www.comecon.sakura.ne.jp/come_timetable/?X  
         X 日の指定 0:初日 1:二日目  
 #### スタッフ用タイムテーブル  
-    http://www.comecon.sakura.ne.jp/timetable/staff/  
+    http://www.comecon.sakura.ne.jp/come_timetable/staff/  
 #### 企画管理ファイルアップロード  
-    http://www.comecon.sakura.ne.jp/timetable/staff/upload  
+    http://www.comecon.sakura.ne.jp/come_timetable/staff/upload  
 
 ## 事前準備用ツール  
     comecon.sakura.ne.jp にtty loginして実行  
