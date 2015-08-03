@@ -44,7 +44,13 @@ sub main {
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <TITLE>解析中</TITLE>
+  <TITLE>企画管理ファイルアップロード</TITLE>
+  <style>
+    table {
+      border-width: 1px;
+      border-color: #ffffff;
+    }
+  </style>
 </head>
 <body>
 <H1>解析開始</H1>
@@ -64,7 +70,8 @@ EOT
     # 出演者シート解析&DB追加(経過表示含む)
     registPerson2DB( $dbobj, $Sperson );
 
-    print "<pte>\n$gs_print\n</pre>\n</body></html>\n" if $DEBUGFLG;
+    print "<pre>\n$gs_print\n</pre>\n";
+    print "<H1>解析完了</H1>\n</body></html>\n";
     db_disconnect( $dbobj );
 }
 
@@ -163,7 +170,7 @@ sub registProgram2DB {
         $pHash,     # 企画情報ハッシュ
        ) = @_;
 
-    printf("<table>");
+    print '<table border="1">' . "\n";
     my $maxRow = $sheet->{"MaxRow"};
     for(my $row=1; $row<=$maxRow; $row++) {
         my $room_row = 0;
@@ -201,7 +208,7 @@ sub registProgram2DB {
             getExcelVal($sheet,$row,$pHash->{'c_owner'}),
             '-', '', 'PO', 1);
     }
-    print "</TABLE>\n";
+    print "</table>\n";
 }
 
 # 出演者シート解析&DB追加(経過表示含む)
