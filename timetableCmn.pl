@@ -53,6 +53,7 @@ our $PSOPDT = 'pg_person_open_detail';
 #   戻り値: Register_dbオブジェクト
 sub db_connect {
     my $dbobj = SFCON::Register_db->new;
+    my $dsn = $dbobj->{ds} . ';mysql_local_infile=1';
     my $db = DBI->connect($dbobj->{ds}, $dbobj->{user}, $dbobj->{pass})
         || die "Got error $DBI::errstr when connecting to $dbobj->{ds}\n";
     $dbobj->{database} = $db;
