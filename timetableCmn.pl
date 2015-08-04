@@ -54,7 +54,7 @@ our $PSOPDT = 'pg_person_open_detail';
 sub db_connect {
     my $dbobj = SFCON::Register_db->new;
     my $dsn = $dbobj->{ds} . ';mysql_local_infile=1';
-    my $db = DBI->connect($dbobj->{ds}, $dbobj->{user}, $dbobj->{pass})
+    my $db = DBI->connect($dsn, $dbobj->{user}, $dbobj->{pass})
         || die "Got error $DBI::errstr when connecting to $dbobj->{ds}\n";
     $dbobj->{database} = $db;
 
