@@ -109,6 +109,9 @@ sub getSheet {
 
     for my $sheet ($book->worksheets()){
         my $sheetname = $sheet->get_name;
+        my $enc = guess_encoding($sheetname);
+        $sheetname = decode($enc->name, $sheetname )
+            if ( ref($enc) && ( $enc->name ne 'utf8' ) );
         print '[' . $sheetname . ']' if $DEBUGFLG;
         if ( $sheetname eq $PrgSname ) {
             $program_sheet = $sheet;
@@ -264,6 +267,9 @@ sub getExcelVal{
     my $cell = $sheet->{"Cells"}[$row][$col];
     my $val = ($cell) ? $cell->Value
                       : "";
+    my $enc = guess_encoding($val);
+    $val = decode($enc->name, $val )
+        if ( ref($enc) && ( $enc->name ne 'utf8' ) );
     return $val;
 }
 
