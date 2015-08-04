@@ -7,6 +7,8 @@ use warnings;
 use utf8;
 use CGI; 
 use CGI::Carp qw(fatalsToBrowser); 
+use Encode::Guess qw/ shiftjis euc-jp 7bit-jis /;
+use Encode qw/ decode /;
 use File::Spec;
 use File::Basename;
 use SFCON::Register_db;
@@ -72,18 +74,14 @@ sub outputPerson {
        ) = @_;
     my $stime           = $pArow->[0];
     my $etime           = $pArow->[1];
-    my $room_name       = $pArow->[2];
+    my $room_name       = decode('utf8', $pArow->[2]);
     my $program_code    = $pArow->[3];
-    my $program_name    = $pArow->[4];
+    my $program_name    = decode('utf8', $pArow->[4]);
     my $loc_seq         = $pArow->[5];
     my $role_code       = $pArow->[6];
-    my $person_name     = $pArow->[7];
-    my $status_code     = $pArow->[11];
-    my $status_name     = $pArow->[12];
-    # utf8::decode($room_name);
-    # utf8::decode($program_name);
-    # utf8::decode($person_name);
-    # utf8::decode($status_name);
+    my $person_name     = decode('utf8', $pArow->[7]);
+    my $status_code     = $pArow->[8];
+    my $status_name     = decode('utf8', $pArow->[9]);
 
     if ( $person_name ne $$p_oldperson_name ) {
         print '<TABLE BORDER="1">' .
@@ -139,9 +137,9 @@ sub dbGetPerson {
     my $sth = $db->prepare(
         "SELECT DATE_FORMAT(a.start_time, '%m/%d %H:%i'), " .
                "DATE_FORMAT(a.end_time, '%H:%i'), " .
-               'b.room_name, c.pg_code, c.pg_name, a.seq, e.role_code, ' .
-               'f.name, 0, a.room_row, f.seq, g.ps_code, g.ps_name ' .
-         'FROM ' . $pgLcDt . ' a ' .
+               'b.room_name, c.pg_code, c.pg_name, a.seq, ' .
+               'e.role_code, f.name, f.seq, g.ps_code ' .
+         'FROM '        . $pgLcDt . ' a ' .
           'INNER JOIN ' . $pgRnMt . ' b ON a.room_key = b.seq ' .
           'INNER JOIN ' . $pgNmMt . ' c ON a.pg_key = c.pg_key ' .
           'INNER JOIN ' . $pgPsDt . ' d ON a.pg_key = d.pg_key ' .

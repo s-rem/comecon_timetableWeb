@@ -7,6 +7,8 @@ use warnings;
 use utf8;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser); 
+use Encode::Guess qw/ shiftjis euc-jp 7bit-jis /;
+use Encode qw/ decode /;
 use File::Spec;
 use File::Basename;
 use SFCON::Register_db;
@@ -117,18 +119,15 @@ sub outputTimeTbl {
        ) = @_;
 	my ( $day,  $stime ) = split(/\s/,$pArow->[0]);
 	my ( $day2, $etime ) = split(/\s/,$pArow->[1]);
-	my $room_name       = $pArow->[2];
+	my $room_name       = decode('utf8', $pArow->[2]);
 	my $program_code    = $pArow->[3];
-	my $program_name    = $pArow->[4];
+	my $program_name    = decode('utf8', $pArow->[4]);
 	my $loc_seq         = $pArow->[5];
 	my $role_code       = $pArow->[6];
-	my $person_name     = $pArow->[7];
-	my $room_row        = $pArow->[9];
-	my $person_code     = $pArow->[10];
-	my $status_code     = $pArow->[11];
-	# utf8::decode($room_name);
-	# utf8::decode($program_name);
-	# utf8::decode($person_name);
+	my $person_name     = decode('utf8', $pArow->[7]);
+	my $room_row        = $pArow->[8];
+	my $person_code     = $pArow->[9];
+	my $status_code     = $pArow->[10];
 
 	return unless ( $day eq $TrgDate[$dayNo] );
 	
@@ -223,7 +222,7 @@ EOT
 #  本来はRegister_dbの中に隠蔽されるべき処理
 
 # テーブル名定数
-our ( $LCDT, $NMMT, $RNMT, );
+our ( $LCDT, $RNMT, $NMMT, $PSOPDT, $RLMT, $PSOPIF, $PSMT, );
 
 # 企画情報取得
 sub dbGetProg {
@@ -233,17 +232,26 @@ sub dbGetProg {
     my $db = $dbobj->{database};
     my $prefix = $dbobj->prefix();
     my $pgLcDt = $prefix . $LCDT;
-    my $pgNmMt = $prefix . $NMMT;
     my $pgRnMt = $prefix . $RNMT;
+    my $pgNmMt = $prefix . $NMMT;
+    my $pgPsDt = $prefix . $PSOPDT;
+    my $pgRlMt = $prefix . $RLMT;
+    my $pgPsIf = $prefix . $PSOPIF;
+    my $pgPsMt = $prefix . $PSMT;
 
     my $sth = $db->prepare(
         'SELECT a.start_time, a.end_time, b.room_name, c.pg_code, c.pg_name, ' .
-               'a.seq, 0, 0, 0, a.room_row, 0, 0, 0' .
-	     'FROM ' . $pgLcDt . ' a ' .
+               'a.seq, e.role_code, f.name, a.room_row, f.seq, g.ps_code, ' .
+	     'FROM '        . $pgLcDt . ' a ' .
 	      'INNER JOIN ' . $pgRnMt . ' b ON a.room_key = b.seq ' .
 	      'INNER JOIN ' . $pgNmMt . ' c ON a.pg_key = c.pg_key ' .
-	     'WHERE c.pg_options = ' . "'公開' " .
-	     'ORDER BY b.room_code, a.start_time, a.end_time DESC, a.room_row');
+	      'LEFT JOIN '  . $pgPsDt . ' d ON a.pg_key = d.pg_key ' .
+	      'INNER JOIN ' . $pgRlMt . ' e ON d.role_key = e.role_key ' .
+	      'INNER JOIN ' . $pgPsIf . ' f ON d.person_key = f.seq ' .
+	      'LEFT JOIN '  . $pgPsMt . ' g ON d.ps_key = g.ps_key ' .
+	     "WHERE c.pg_options = '公開' " .
+	     'ORDER BY b.room_code, a.room_row, a.start_time, e.role_code, ' .
+                  'd.ps_key, d.seq');
     $sth->execute();
     return $sth;
 }
