@@ -8,7 +8,7 @@ use utf8;
 use SFCON::Register_db;
 
 # 定数定義
-our $PrgURL = 'http://www.comecon.com/aj?alias=p';
+our $PrgURL = 'http://www.comecon.jp/aj?alias=p54_';
 our @SETime = (
     {               # 1日目
         's'  => 10,  # 開始時刻
