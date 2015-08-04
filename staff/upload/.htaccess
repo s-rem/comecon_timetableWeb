@@ -1,8 +1,8 @@
 Options +ExecCGI
 AddHandler cgi-script cgi pl
 #AuthType Basic
-#AuthUserFile /home/comecon/auth/timetable_staff/passwd
-#AuthGroupFile /home/comecon/auth/timetable_staff/group
+#AuthUserFile /home/comecon/auth/timetable_upload/passwd
+#AuthGroupFile /home/comecon/auth/timetable_upload/group
 #       <Limit HEAD GET POST OPTIONS PROPFIND>
 #Require valid-user
 #Require group executives

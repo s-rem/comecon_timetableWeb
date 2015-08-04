@@ -8,7 +8,7 @@ use utf8;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Encode::Guess qw/ shiftjis euc-jp 7bit-jis /;
-use Encode qw/ decode encode /;
+use Encode qw/ decode /;
 use File::Copy;
 use File::Spec;
 use File::Basename;
