@@ -17,20 +17,25 @@ binmode STDOUT, ":utf8";
 
 # 共通定義
 require( dirname(File::Spec->rel2abs($0)) . '/../timetableCmn.pl');
-our(  $PrgURL, @SETime, @TrgDate, $Tspan, $Maxwidth, $Roomwidth );
-
-# 定数定義
-my $acttime = $SETime[0]->{'e'} - $SETime[0]->{'s'} +
-              $SETime[1]->{'e'} - $SETime[1]->{'s'};
-$acttime ++ if ( $SETime[0]->{'em'} > 0 );
-$acttime ++ if ( $SETime[1]->{'em'} > 0 );
-our $Maxcol = int( $acttime * 60 / $Tspan ) + 1;
-our $Colsize_h = $Maxwidth - ( $Roomwidth * 2 ) / $acttime; # *2は2つの日付列
-our $Colsize = $Colsize_h / 60 * $Tspan;
+our ( $PrgURL, @SETime, @TrgDate, $Tspan, $Maxwidth, $Roomwidth, $CellSpc, );
+my  ( $Maxcol, $Colsize, );
 
 sub main {
+    # 定数値設定
+    my $acttime = $SETime[0]->{'e'} - $SETime[0]->{'s'} +
+                  $SETime[1]->{'e'} - $SETime[1]->{'s'};
+    $acttime ++ if ( $SETime[0]->{'em'} > 0 );
+    $acttime ++ if ( $SETime[1]->{'em'} > 0 );
+    # 列数
+    $Maxcol = int( $acttime * 60 / $Tspan ) + 2; # +2は2つの日付列
+    # 1時間分列幅
+    my $colsize_h = ( $Maxwidth - ( $Roomwidth * 2 ) ) / $acttime; 
+    # 1スパン分列幅
+    $Colsize = int( $colsize_h / ( 60 / $Tspan ) ) - $CellSpc;
+
     # 出力開始
     outputHtmlHeadBodytop();
+    # タイムテーブルヘッダ出力
     outputTimeTblHead();
 
     # タイムテーブル本体取得
@@ -43,10 +48,9 @@ sub main {
     my $oloc_seq = 0;   # 企画情報レコード番号退避
     my $oroom_name = '';    # 部屋名退避
     my $oroom_row = '';     # 表示順序退避
-    while(my @row = $sth->fetchrow_array ) {
-        outputTimeTbl( \@row, $linenum, \$col,
+    while( my @row = $sth->fetchrow_array ) {
+        outputTimeTbl( \@row, \$linenum, \$col,
                        \$oprg_code, \$oloc_seq, \$oroom_name, \$oroom_row );
-        $linenum++;
     }
     $sth->finish;
 
@@ -68,7 +72,7 @@ sub main {
     outputHtmlTail();
 }
 
-# HTMLヘッダ出力
+# HTMLヘッダ部分出力
 sub outputHtmlHeadBodytop {
     my $q  = CGI->new();
     print $q->header( -type=>'text/html', -charset=>'UTF-8', );
@@ -78,58 +82,49 @@ sub outputHtmlHeadBodytop {
 <head>
   <meta charset="utf-8">
   <TITLE>タイムテーブル(staff用)</TITLE>
-  <link rel="stylesheet" href="timetable.css" type="text/css">
+  <link rel="stylesheet" href="./timetable.css" type="text/css">
 </head>
 <body>
 <center>
 EOT
 }
 
-## タイムテーブルヘッダ出力
+# タイムテーブルヘッダ部分出力
 sub outputTimeTblHead {
-    print '<TABLE border="0" cellpadding="2" cellspacing="1" ' .
-          ' bgcolor="#cccccc" width="' . $Maxwidth . '">' . "\n";
-    print '<thead>' . "\n";
+    print '<table border="0" cellpadding="0" cellspacing="' . $CellSpc . '" ' .
+          ' bgcolor="#cccccc">' . "\n";
+    print "<thead>\n";
     ## 時刻帯出力
     my $colspanval = 60 / $Tspan;
-    print '<TR align="center" height="20">' . "\n";
-    print '<TD rowspan="2" width ="' . $Roomwidth . '">' . $TrgDate[0] .
-          '</TD>' . "\n";
-    my $ticcnt = 0;
-    my $lasthour = $SETime[0]->{'e'};
-    $lasthour++ if ( $SETime[0]->{'em'} > 0 );
-    for ( my $c = $SETime[0]->{'s'}; $c < $lasthour; $c++ ) {
-        print '<TD bgcolor="#FFFFFF" width="' . $Colsize_h . '" ' .
-              'colspan="' . $colspanval . '" align="left">' .
-              '<FONT color="#000000">' . $c . '</font></td>' . "\n";
-        $ticcnt += $colspanval;
+    my $ticcnt = 1; # 二日目の日付列があるので、初期値 1
+    print '<tr align="center" height="20">' . "\n";
+    foreach my $dayNo ( 0, 1 ) {
+        print '<th rowspan="2" width ="' . $Roomwidth . '">' . 
+              $TrgDate[$dayNo] . '</th>' . "\n";
+        my $lasthour = $SETime[$dayNo]->{'e'};
+        $lasthour++ if ( $SETime[$dayNo]->{'em'} > 0 );
+        for ( my $c = $SETime[$dayNo]->{'s'}; $c < $lasthour; $c++ ) {
+            print '<th colspan="' . $colspanval . '" align="left" ' .
+                  'bgcolor="#FFFFFF"> ' .
+                  sprintf( '%02d', $c ) . '</th>' . "\n";
+            $ticcnt += $colspanval;
+        }
     }
-    print '<TD rowspan="2" width ="' . $Roomwidth . '">' . $TrgDate[1] .
-          '</TD>' . "\n";
-    $ticcnt ++;
-    $lasthour = $SETime[1]->{'e'};
-    $lasthour++ if ( $SETime[1]->{'em'} > 0 );
-    for ( my $c = $SETime[1]->{'s'}; $c < $lasthour; $c++ ) {
-        print '<TD bgcolor="#FFFFFF" width="' . $Colsize_h . '" ' .
-              'colspan="' . $colspanval . '" align="left">' .
-              '<FONT color="#000000">' . $c . '</font></td>' . "\n";
-        $ticcnt += $colspanval;
-    }
-    print "</TR>\n";
-    ## 15分区切り出力
-    print '<TR align="center" height="1">' . "\n";
+    print "</tr>\n";
+    ## Tspan分区切り出力
+    print '<tr align="center" height="4">' . "\n";
     for ( my $c = 1; $c < $ticcnt; $c++ ) {
-        print '<TD bgcolor="#FFFFFF" width="' . $Colsize . '"></td>' . "\n";
+        print '<td bgcolor="#FFFFFF" width="' . $Colsize . '"></td>' . "\n";
     }
     print "</tr>\n";
     print "</thead>\n";
 }
 
-# タイムテーブル本体表示
+# 企画本体出力
 sub outputTimeTbl {
     my (
         $pArow,
-        $linenum,
+        $p_linenum,
         $p_col,
         $p_oldprg_code,
         $p_oldloc_seq,
@@ -154,26 +149,28 @@ sub outputTimeTbl {
     my $sts_name    = decode('utf8', $pArow->[12]);
     $sts_name = '' unless defined($sts_name);
     my $pg_options  = decode('utf8', $pArow->[13]);
+
     if ( $prg_code ne $$p_oldprg_code ) {
-        if($room_name ne $$p_oldroom_name || $room_row ne $$p_oldroom_row){
-            if ( $linenum != 0 ) {
+        if ( $room_name ne $$p_oldroom_name || $room_row ne $$p_oldroom_row ) {
+            if ( $$p_linenum != 0 ) {
                 print "</font></td>\n";
-                my $leftcolval = $Maxcol - $$p_col;
-                if ( $leftcolval > 0 ) {
-                    print '<td colspan="' . $leftcolval . '" rowspan="1" ' .
+                my $leftcol = $Maxcol - $$p_col;
+                if ( $leftcol > 0 ) {
+                    print '<td colspan="' . $leftcol . '" rowspan="1" ' .
                           'bgcolor="#c0c0c0"></td>' . "\n";
                 }
                 print "</tr>\n";
                 $$p_col = 0;
             }
-            print '<tr height="32">' . "\n" .
-                  '<td width="' . $Roomwidth . '" colspan="1" rowspan="1" ' .
-                  'bgcolor="#E6FF8E">' . $room_name. '<BR></td>' . "\n";
+            print '<tr height="32">' . "\n";
+            print '<th width="' . $Roomwidth . '" colspan="1" rowspan="1" ' .
+                  'bgcolor="#E6FF8E">' . $room_name . "</th>\n";
             $$p_oldroom_name = $room_name;
             $$p_oldroom_row  = $room_row;
+            $$p_oldloc_seq = 0;
         }
-        my ( $s_tm_h, $s_tm_m ) = split(/:/, $stime);
-        my ( $e_tm_h, $e_tm_m ) = split(/:/, $etime);
+        my ( $s_tm_h, $s_tm_m ) = split( /:/, $stime );
+        my ( $e_tm_h, $e_tm_m ) = split( /:/, $etime );
         my ( $s_col, $e_col );
         if ( $day eq  $TrgDate[0] ) {
             my $wkt = $SETime[0]->{'s'};
@@ -191,7 +188,7 @@ sub outputTimeTbl {
                      + $scol;
         } 
         my $leftcolval = $s_col - $$p_col;
-        if ( $leftcolval > 0) {
+        if ( $leftcolval > 0 ) {
             print '<td colspan="' . $leftcolval . '" rowspan="1" ' .
                   'bgcolor="#c0c0c0"></td>' . "\n";
         }
@@ -200,55 +197,47 @@ sub outputTimeTbl {
                 if ( $$p_oldloc_seq != 0 ) {
                     print "</font></td>\n";
                 }
-                my $cwidth = $Colsize * ( $e_col - $s_col );
                 my $cspan  = $e_col - $s_col;
                 my $bgcolor = ( $pg_options ne '公開' ) ? '#ffe0e0' : '#e0ffe0';
-                print '<td width = "' . $cwidth . '" colspan="' . $cspan .
-                    '" rowspan="1" bgcolor="' . $bgcolor . '">' . "\n";
-                $$p_oldloc_seq = $loc_seq;
+                print '<td colspan="' . $cspan . '" rowspan="1" ' .
+                      'bgcolor="' . $bgcolor . '">' . "\n";
             } else {
                 print "</font><hr>\n";
             }
+            $$p_oldloc_seq = $loc_seq;
             print '<font size = "-1">' .
                 '<INPUT TYPE="CHECKBOX" name="PLS" value="' . $loc_seq . '">' .
                 $stime . '-<br>';
             print '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
-                '</a> ' . $prg_name. '[' . $pg_options . ']<br>';
+                  '</a> ' . $prg_name. '[' . $pg_options . ']<br>';
         }
         $$p_oldprg_code = $prg_code;
         $$p_col = $e_col;
+        $$p_linenum++;
     }
-    my $bl_s = "</SPAN>";
-    my $pp_cls = 'pp';
-    if ( $sts_code eq 'NG-01' || $sts_code eq 'NG-02' ) {
-        $pp_cls = 'pp_ng';
-    }
-    if ( $psn_count != 0 ) {
-        $bl_s = '<BLINK>★</BLINK></SPAN>' 
-    }
+    my $pp_cls;
+    my $wksts;
+    my $bl_s = '<BLINK>★</BLINK>' if ( $psn_count != 0 ) ;
     if ( $role_code eq 'PP' ) {
-        $sts_name = '状況不明' if ( $sts_name eq '' );
         print '<SPAN CLASS="pp">出:';
-        print $bl_s .
-                '<A HREF="./person_detail.cgi?' . $psn_code .
-                '" CLASS="' . $pp_cls . '" > ' .
-                $psn_name . '[' . $sts_name . ']</a><BR>';
+        $wksts = ( $sts_name eq '' ) ? '[状況不明]'
+                                     : "[$sts_name]";
+        $pp_cls = ( $sts_code eq 'NG-01' || $sts_code eq 'NG-02' ) ? 'pp_ng'
+                                                                   : 'pp';
     } elsif ( $role_code eq 'PO' ) {
         print '<SPAN CLASS="po">主:';
-        print $bl_s .
-                '<A HREF="./person_detail.cgi?' . $psn_code .
-                '" CLASS="po" >' . $psn_name . '</a><BR>';
+        $pp_cls = 'po';
     } elsif ( $role_code eq 'PR' ) {
         print '<SPAN CLASS="pr">担:';
-        print $bl_s . 
-              '<A HREF="./person_detail.cgi?' . $psn_code .
-              ' "CLASS="pr" >' . $psn_name . '</a><BR>';
+        $pp_cls = 'pr';
     } else {
         print '<SPAN CLASS="pr">＊:';
-        print $bl_s . 
-              '<A HREF="./person_detail.cgi?' . $psn_code .
-              ' "CLASS="pr" >' . $psn_name . '</a><BR>';
+        $pp_cls = 'pr';
     }
+    print $bl_s .
+            '<A HREF="./person_detail.cgi?' . $psn_code .
+            '" CLASS="' . $pp_cls . '" > ' .
+            $psn_name . $wksts . '</a></SPAN><BR>';
 }
 
 # タイムテーブル未配置企画出力準備
@@ -264,10 +253,11 @@ sub outputTimeTblMidle {
     }
     print "</tr>\n" .
           '<tr height="32">' . "\n" .
-          '<td width="' . $Roomwidth . '" colspan="1" rowspan="1" ' .
-          ' bgcolor="#E6FF8E">未配置企画<BR></td>' . "\n";
+          '<th width="' . $Roomwidth . '" colspan="1" rowspan="1" ' .
+          ' bgcolor="#E6FF8E">未配置企画<BR></th>' . "\n";
+    # 間は1カラム開ける
     print '<td colspan="1" rowspan="1" bgcolor="#c0c0c0"></td>' . "\n";
-    my $wkcol = $Maxcol - 2;
+    my $wkcol = $Maxcol - 2; # 後ろは2カラム開ける
     print '<td colspan="' . $wkcol . '" rowspan="1" bgcolor="#ffffff">';
 }
 

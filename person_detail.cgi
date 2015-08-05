@@ -30,9 +30,9 @@ sub main {
     my $dbobj = db_connect();
     my $sth = dbGetPerson( $dbobj, $person_code );
     # 出演者情報出力
+    my $oldloc_seq = 0;
+    my $oldperson_name = '';
     while(my @row = $sth->fetchrow_array) {
-        my $oldloc_seq = 0;
-        my $oldperson_name = '';
         outputPerson( $person_code, \@row, \$oldloc_seq, \$oldperson_name );
     }
     $sth->finish;
@@ -85,11 +85,12 @@ sub outputPerson {
 
     if ( $person_name ne $$p_oldperson_name ) {
         print '<TABLE BORDER="1">' .
-                '<TR><TD COLSPAN="3">' . $person_code . ' ' . $person_name;
+                '<TR><TD COLSPAN="3">' . $person_code .
+                ' <STRONG>' . $person_name . '</STRONG>';
         $$p_oldperson_name = $person_name;
     }
     if ( $loc_seq ne $$p_oldloc_seq ) {
-        print '</TD></TR><TR>' .
+        print "</TD></TR>\n<TR>" .
                 '<TD>' . $stime . '-' . $etime . '</td>' .
                 '<td>' . $room_name . '</td>' .
                 '<td>' . $program_code . ' ' . $program_name . '</td><TD>';
@@ -138,7 +139,8 @@ sub dbGetPerson {
         "SELECT DATE_FORMAT(a.start_time, '%m/%d %H:%i'), " .
                "DATE_FORMAT(a.end_time, '%H:%i'), " .
                'b.room_name, c.pg_code, c.pg_name, a.seq, ' .
-               'e.role_code, f.name, f.seq, g.ps_code ' .
+               'e.role_code, f.name, ' .
+               'g.ps_code, g.ps_name ' .
          'FROM '        . $pgLcDt . ' a ' .
           'INNER JOIN ' . $pgRnMt . ' b ON a.room_key = b.seq ' .
           'INNER JOIN ' . $pgNmMt . ' c ON a.pg_key = c.pg_key ' .

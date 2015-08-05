@@ -73,8 +73,8 @@ sub outputPerson {
         $p_oldloc_seq,
         $p_oldperson_name,
        ) = @_;
-    my ( $day, $stime  ) = split(/\s/,$pArow->[0]);
-    my ( $day2, $etime ) = split(/\s/,$pArow->[1]);
+    my $stime           = $pArow->[0];
+    my $etime           = $pArow->[1];
     my $room_name       = decode('utf8', $pArow->[2]);
     my $program_code    = $pArow->[3];
     my $program_name    = decode('utf8', $pArow->[4]);
@@ -86,12 +86,13 @@ sub outputPerson {
 
     if ( $person_name ne $$p_oldperson_name ) {
         print '<TABLE BORDER="1">' .
-                '<TR><TD COLSPAN="3">' . $person_code . ' ' . $person_name;
+                '<TR><TD COLSPAN="3">' . $person_code .
+                ' <STRONG>' . $person_name . '</STRONG>';
         $$p_oldperson_name = $person_name;
     }
     if ( $loc_seq ne $$p_oldloc_seq ) {
-        print '</TD></TR><TR>' .
-                '<TD>' . $day . ' ' . $stime . ' ' . $etime . '</td>' .
+        print "</TD></TR>\n<TR>" .
+                '<TD>' . $stime . '-' . $etime . '</td>' .
                 '<td>' . $room_name . '</td>' .
                 '<td>' . $program_code . ' ' . $program_name . '</td><TD>';
         $$p_oldloc_seq = $loc_seq;
@@ -136,8 +137,10 @@ sub dbGetPerson {
     my $pgPsDt = $prefix . $PSDT;
 
     my $sth = $db->prepare(
-        'SELECT a.start_time, a.end_time, b.room_name, c.pg_code, c.pg_name, ' .
-               'a.seq, e.role_code, f.name, ' .
+        "SELECT DATE_FORMAT(a.start_time, '%m/%d %H:%i'), " .
+               "DATE_FORMAT(a.end_time, '%H:%i'), " .
+               'b.room_name, c.pg_code, c.pg_name, a.seq, ' .
+               'e.role_code, f.name, ' .
                '( SELECT count(y.person_key) ' .
                    'FROM '        . $pgLcDt . ' z ' .
                     'INNER JOIN ' . $pgPsDt . ' y ON z.pg_key = y.pg_key ' .

@@ -30,10 +30,8 @@ our @TrgDate = (
 );
 our $Tspan=15;
 our $Maxwidth = 1600;
-our $Roomwidth = 80;
-our $Maxcol;
-our $Colsize_h;
-our $Colsize;
+our $Roomwidth = 90;
+our $CellSpc   = 1;
 
 # テーブル名定数
 our $LCDT = 'pg_location_detail';
