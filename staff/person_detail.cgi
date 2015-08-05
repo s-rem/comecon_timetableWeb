@@ -31,9 +31,9 @@ sub main {
     my $dbobj = db_connect();
     my $sth = dbGetPerson( $dbobj, $person_code );
     # 出演者情報出力
+    my $oldloc_seq = 0;
+    my $oldperson_name = '';
     while(my @row = $sth->fetchrow_array) {
-        my $oldloc_seq = 0;
-        my $oldperson_name = '';
         outputPerson( $person_code, \@row, \$oldloc_seq, \$oldperson_name );
     }
     $sth->finish;
