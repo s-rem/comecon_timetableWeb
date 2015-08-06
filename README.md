@@ -5,18 +5,18 @@
 (デプロイ先が、www.comecon.sakura.ne.jpの <WebHome>/come_timetable の場合)
 #### 公開タイムテーブル  
     http://www.comecon.sakura.ne.jp/come_timetable/?X  
-        X 日の指定 0:初日 1:二日目  
+        X 日の指定 0:初日 1:二日目 省略時:0   
 #### スタッフ用タイムテーブル  
     http://www.comecon.sakura.ne.jp/come_timetable/staff/  
 #### 企画管理ファイルアップロード  
-    http://www.comecon.sakura.ne.jp/come_timetable/staff/upload  
+    http://www.comecon.sakura.ne.jp/come_timetable/staff/upload/  
 
 ## 事前準備用ツール  
     comecon.sakura.ne.jp にtty loginして実行  
     配置場所は、~comecon/www/come-timetable/tools  
 #### timetable_dbinit  
-    タイムテーブル機能が使用するtableの大半を作成  
-    固定値tableに値設定  
+    タイムテーブル機能が使用するtableの大半(6つ)を作成  
+    固定値table(2つ)に値設定  
     設定する値は、事前に以下のファイルとして作成する(ツールと同じ場所)
         * pg_role_master.csv  
             koiconの同名tableと同じ値  
@@ -28,7 +28,7 @@
         * room_name_master.csv  
             企画管理ファイルの場所コードシートに基いて作成
 #### timetable_personset  
-    参加者情報tableを作成し、値設定  
+    参加者情報table(2つ)を作成し、値設定  
     設定する値は任意の2つのcsvファイルで作成し、ツール起動引数で指定  
         * 1つめ: pg_person_infoに設定するデータ  
         * 2つめ: pg_person_open_infoに設定するデータ  
