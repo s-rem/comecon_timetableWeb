@@ -123,6 +123,7 @@ a:visited {
     td {
         font-size:80%;
         background:#FFF;
+        vertical-align:top;
     }
     td.tic {
         background:#FFFFFF;
@@ -194,6 +195,7 @@ a:visited {
     }
     td {
         font-size:60%;
+        vertical-align:top;
     }
     td.tic {
         background:#FFFFFF;

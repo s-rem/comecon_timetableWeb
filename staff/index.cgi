@@ -156,7 +156,7 @@ sub outputTimeTbl {
     $sts_name = '' unless defined($sts_name);
     my $pg_options  = decode('utf8', $pArow->[13]);
 
-    if ( $room_name ne $$p_oldroom_name || $room_row ne $$p_oldroom_row ) {
+    if ( $room_name ne $$p_oldroom_name ) {
         if ( $$p_linenum != 0 ) {
             print "</td>\n";
             my $leftcol = $Maxcol - $$p_col;
@@ -171,9 +171,9 @@ sub outputTimeTbl {
         print '<th width="' . $Roomwidth . '" colspan="1" rowspan="1" ' .
               'class="room">' . $room_name . "</th>\n";
         $$p_oldroom_name = $room_name;
-        $$p_oldroom_row  = $room_row;
         $$p_oldloc_seq = 0;
     }
+    $$p_oldroom_row  = $room_row;
     my ( $s_tm_h, $s_tm_m ) = split( /:/, $stime );
     my ( $e_tm_h, $e_tm_m ) = split( /:/, $etime );
     my ( $s_col, $e_col );
@@ -362,7 +362,7 @@ sub dbGetProg {
             'INNER JOIN ' . $pgRlMt . ' e ON d.role_key     = e.role_key ' .
             'INNER JOIN ' . $pgPsIf . ' f ON d.person_key   = f.seq ' .
             'LEFT JOIN '  . $pgPsMt . ' g ON d.ps_key       = g.ps_key ' .
-          'ORDER BY b.room_code, a.room_row, a.start_time, e.role_code, ' .
+          'ORDER BY b.room_code, a.start_time, a.room_row, e.role_code, ' .
                    'd.ps_key, d.seq' );
     $sth->execute();
     return $sth;
