@@ -1,7 +1,5 @@
 @charset "utf-8";
 body {
-    background-color: #ffffff;
-    text-color: #000000;
     margin: 0;
 }
 a:link {
@@ -36,80 +34,86 @@ a:visited {
         text-decoration:none;
         background-color:yellow;
     }
-    a.pp_ng:link {
+
+    .pp {
+        display:block;
         color : green;
-        text-decoration:line-through;
+        font-size : 80%
+    } 
+    .pp a:link,
+    .pp a:visited {
+        color : green;
+        text-decoration:none;
     }
+    .pp a:hover,
+    .pp a:active {
+        color : green;
+        text-decoration:none;
+        background-color:yellow;
+    }
+
     .pp_ng {
+        display:block;
         color : green;
         font-size : 80%
     } 
-    a.pp_ng:hover {
+    .pp_ng a:link,
+    .pp_ng a:visited {
+        color : green;
+        text-decoration:line-through;
+    }
+    .pp_ng a:hover,
+    .pp_ng a:active {
         color : green;
         text-decoration:line-through;
         background-color:yellow;
     }
-    a.pp_ng:active {
-        color : green;
-        text-decoration:line-through;
-        background-color:yellow;
-    }
-    a.pp_ng:visited {
-        color : green;
-        text-decoration:line-through;
-    }
+
     .po {
+        display:block;
         color : blue;
         font-size : 80%
     }
-    a.po:link {
+    .po a:link,
+    .po a:visited {
         color : blue;
+        text-decoration:none;
     }
-    a.po:hover {
+    .po a:hover,
+    .po a:active {
         color : blue;
         text-decoration:none;
         background-color:yellow;
     }
-    a.po:active {
-        color : blue;
-        text-decoration:none;
-        background-color:yellow;
-    }
-    a.po:visited {
-        color : blue;
-        text-decoration:none;
-    }
+
     .pr {
+        display:block;
         color : red;
         font-size : 80%
     } 
-    a.pr:link {
+    .pr a:link,
+    .pr a:visited {
         color : red;
         text-decoration:none;
     }
-    a.pr:hover {
-        color : red;
-        text-decoration:none;
-        background-color:yellow;
-    }
-    a.pr:active {
+    .pr a:hover,
+    .pr a:active {
         color : red;
         text-decoration:none;
         background-color:yellow;
     }
-    a.pr:visited {
-        color : red;
-        text-decoration:none;
-    }
+
     table {
-        margin:10px auto;
         padding:0;
         border-style:solid;
         border-width:1px 1px 0 0;
         border-color:#999;
         height:auto;
+        background-color:#cccccc;
+        margin:10px auto;
     }
-    td,th {
+    td,
+    th {
         margin:0;
         padding:0;
         border-style:solid;
@@ -121,38 +125,27 @@ a:visited {
         font-size:80%;
         background:#FFF;
     }
+    td.tic {
+        background:#FFFFFF;
+    }
     th.time {
-        font-size:80%;
-        text-align:center;
         font-weight:bold;
+        text-align:center;
+        font-size:80%;
         background:#D4C29C;
     }
     th.room {
-        font-size:80%;
         text-align:left;
-        font-weight:normal;
-        background:#D23A2F;
-        color:#FFF;
         vertical-align:middle;
-    }
-    span.pp,
-    span.pp2 {
-        display:block;
-        color : green;
-        font-size : 80%
-    } 
-    span.pp a:link,
-    span.pp a:visited {
-        color : green;
-        text-decoration:none;
-    }
-    span.pp a:hover,
-    span.pp a:active {
-        color : green;
-        text-decoration:none;
-        background-color:yellow;
+        font-size:80%;
+        font-weight:normal;
+        color:#FFF;
+        background:#D23A2F;
     }
     .use {
+        background:#FFFFFF;
+    }
+    .open {
         background:#FFFFFF;
     }
     .no-use {
@@ -167,15 +160,17 @@ a:visited {
         font-size:7px;
         line-height:100%;
     }
-    .pp {
-        display: none;
-    }
-    .pp2 {
-        font-size:60%;
-    }
+
     a {
         color:#000;
     }
+
+    .pp,
+    .po,
+    .pr {
+        display: none;
+    }
+
     table {
         width:100%;
         margin:0;
@@ -183,7 +178,6 @@ a:visited {
         border-style:solid;
         border-width:1px 1px 0 0 ;
         border-color:#999;
-        /* width:auto; */
         height:auto;
         background:#FFF;
         height:100%;
@@ -191,17 +185,20 @@ a:visited {
     tr {
         height:auto;
     }
-    td,th {
+    td,
+    th {
         margin:0;
         padding:0;
         border-style:solid;
         border-width:0 0 1px 1px;
         border-color:#999;
-        /* width:auto; */
         height:auto;
     }
     td {
         font-size:60%;
+    }
+    td.tic {
+        background:#FFFFFF;
     }
     th.time {
         font-size:50%;
@@ -216,7 +213,8 @@ a:visited {
         vertical-align:middle;
         background:#FFF;
     }
-    .use {
+    .use,
+    .open  {
         background:#FFFFFF;
     }
     .no-use {

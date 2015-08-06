@@ -1,109 +1,221 @@
+@charset "utf-8";
 body {
-    background-color: #ffffff;
-    text-color: #000000;
     margin: 0;
 }
 a:link {
     text-color: #0000ff;
-	text-decoration:none;
+    text-decoration:none;
 }
 a:hover {
-	text-decoration:none;
-	background-color:yellow;
+    text-decoration:none;
+    background-color:yellow;
 }
 a:active {
     text-color: #ff0000;
-	text-decoration:none;
-	background-color:yellow;
+    text-decoration:none;
+    background-color:yellow;
 }
 a:visited {
     text-color: #000099;
-	text-decoration:none;
+    text-decoration:none;
 }
-.pp {
-	color : green;
-	font-size : 80%
-} 
-a.pp:link {
-	color : green;
-	text-decoration:none;
+@media screen {
+    body {
+        background:#FFF;
+        color: #333333;
+    }
+    
+    a:link,
+    a:visited {
+        text-decoration:none;
+    }
+    a:hover,
+    a:active {
+        text-decoration:none;
+        background-color:yellow;
+    }
+
+    .pp {
+        display:block;
+        color : green;
+        font-size : 80%
+    } 
+    .pp a:link,
+    .pp a:visited {
+        color : green;
+        text-decoration:none;
+    }
+    .pp a:hover,
+    .pp a:active {
+        color : green;
+        text-decoration:none;
+        background-color:yellow;
+    }
+
+    .pp_ng {
+        display:block;
+        color : green;
+        font-size : 80%
+    } 
+    .pp_ng a:link,
+    .pp_ng a:visited {
+        color : green;
+        text-decoration:line-through;
+    }
+    .pp_ng a:hover,
+    .pp_ng a:active {
+        color : green;
+        text-decoration:line-through;
+        background-color:yellow;
+    }
+
+    .po {
+        display:block;
+        color : blue;
+        font-size : 80%
+    }
+    .po a:link,
+    .po a:visited {
+        color : blue;
+        text-decoration:none;
+    }
+    .po a:hover,
+    .po a:active {
+        color : blue;
+        text-decoration:none;
+        background-color:yellow;
+    }
+
+    .pr {
+        display:block;
+        color : red;
+        font-size : 80%
+    } 
+    .pr a:link,
+    .pr a:visited {
+        color : red;
+        text-decoration:none;
+    }
+    .pr a:hover,
+    .pr a:active {
+        color : red;
+        text-decoration:none;
+        background-color:yellow;
+    }
+
+    table {
+        padding:0;
+        border-style:solid;
+        border: 0;
+        border-color:#999;
+        height:auto;
+        background-color:#cccccc;
+    }
+    td,
+    th {
+        margin:0;
+        padding:0;
+        border-style:solid;
+        border-width:0 0 1px 1px;
+        border-color:#999;
+        height:auto;
+    }
+    td {
+        font-size:80%;
+        background:#FFF;
+    }
+    td.tic {
+        background:#FFFFFF;
+    }
+    th.time {
+        font-weight:bold;
+        text-align:left;
+        background:#D4C29C;
+    }
+    th.room {
+        text-align:left;
+        vertical-align:middle;
+        background:#E6FF8E;
+    }
+    .unset {
+        background:#ffffff;
+    }
+    .use {
+        background:#ffe0e0;
+    }
+    .open {
+        background:#e0ffe0;
+    }
+    .no-use {
+        background:#c0c0c0;
+    }
 }
-a.pp:hover {
-	color : green;
-	text-decoration:none;
-	background-color:yellow;
-}
-a.pp:active {
-	color : green;
-	text-decoration:none;
-	background-color:yellow;
-}
-a.pp:visited {
-	color : green;
-	text-decoration:none;
-}
-a.pp_ng:link {
-	color : green;
-	text-decoration:line-through;
-}
-.pp_ng {
-	color : green;
-	font-size : 80%
-} 
-a.pp_ng:hover {
-	color : green;
-	text-decoration:line-through;
-	background-color:yellow;
-}
-a.pp_ng:active {
-	color : green;
-	text-decoration:line-through;
-	background-color:yellow;
-}
-a.pp_ng:visited {
-	color : green;
-	text-decoration:line-through;
-}
-.po {
-	color : blue;
-	font-size : 80%
-}
-a.po:link {
-	color : blue;
-}
-a.po:hover {
-	color : blue;
-	text-decoration:none;
-	background-color:yellow;
-}
-a.po:active {
-	color : blue;
-	text-decoration:none;
-	background-color:yellow;
-}
-a.po:visited {
-	color : blue;
-	text-decoration:none;
-}
-.pr {
-	color : red;
-	font-size : 80%
-} 
-a.pr:link {
-	color : red;
-	text-decoration:none;
-}
-a.pr:hover {
-	color : red;
-	text-decoration:none;
-	background-color:yellow;
-}
-a.pr:active {
-	color : red;
-	text-decoration:none;
-	background-color:yellow;
-}
-a.pr:visited {
-	color : red;
-	text-decoration:none;
+
+@media print {
+    body {
+        width:99%;
+        font-family:"ＭＳ Ｐ明朝", "MS PMincho", "ヒラギノ明朝 Pro W3", "Hiragino Mincho Pro", serif;
+        font-size:7px;
+        line-height:100%;
+    }
+
+    a {
+        color:#000;
+    }
+
+    .pp,
+    .po,
+    .pr {
+        display: none;
+    }
+
+    table {
+        width:100%;
+        margin:0;
+        padding:0;
+        border-style:solid;
+        border-width:1px 1px 0 0 ;
+        border-color:#999;
+        height:auto;
+        background:#FFF;
+        height:100%;
+    }
+    tr {
+        height:auto;
+    }
+    td,
+    th {
+        margin:0;
+        padding:0;
+        border-style:solid;
+        border-width:0 0 1px 1px;
+        border-color:#999;
+        height:auto;
+    }
+    td {
+        font-size:60%;
+    }
+    td.tic {
+        background:#FFFFFF;
+    }
+    th.time {
+        font-size:50%;
+        text-align:center;
+        font-weight:normal;
+        background:#FFF;
+    }
+    th.room {
+        font-size:60%;
+        text-align:left;
+        font-weight:normal;
+        vertical-align:middle;
+        background:#FFF;
+    }
+    .use,
+    .open {
+        background:#FFFFFF;
+    }
+    .no-use {
+        background:#CCC
+    }
 }
