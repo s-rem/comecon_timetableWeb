@@ -276,24 +276,27 @@ sub outputTimeTblDeny {
     if ( $prg_code ne $$p_oldprg_code ) {
         print "<br>\n" if ( $$p_oldprg_code );
         print
-            '<font size = "-1">' .
-            '<INPUT TYPE="CHECKBOX" name="PPC" value="' . $prg_code . '">' .
+            '<INPUT TYPE="CHECKBOX" name="PPC" value="' . $prg_code . '"> ' .
             '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
-            '</a>' . $prg_name .
-            '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' .
-            $prg_option . '&nbsp;';
+            '</a> ' . $prg_name . '<br>' . $prg_option ;
         $$p_oldprg_code = $prg_code;
     }
-    if($role_code eq 'PP'){
-        print '<font size = "-2" color="green">出:<SPAN>';
+    my $cls;
+    my $wksts;
+    if ( $role_code eq 'PP' ) {
+        $wksts = '出:';
+        $cls = 'pp';
+    } elsif ($role_code eq 'PO' ) {
+        $wksts = '主:';
+        $cls = 'po';
+    } elsif ($role_code eq 'PR' ) {
+        $wksts = '担:';
+        $cls = 'pr';
+    } else {
+        $wksts = '＊:';
+        $cls = 'pr';
     }
-    elsif($role_code eq 'PO'){
-        print '<font size = "-2" color="blue">主:<SPAN>';
-    }
-    elsif($role_code eq 'PR'){
-        print '<font size = "-2" color="red">担:<SPAN>';
-    }
-    print $psn_name . '</SPAN></font> ';
+    print '<span class="' . $cls . '">' . $wksts . $psn_name . '</span> ';
 }
 
 # 未配置出力後始末出力
