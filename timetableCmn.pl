@@ -44,6 +44,48 @@ our $PSDT = 'pg_person_detail';
 our $PSOPIF = 'pg_person_open_info';
 our $PSOPDT = 'pg_person_open_detail';
 
+# HTMLヘッダ部分出力
+sub outputHtmlHeadBodytop {
+    my (
+        $title,         # タイトル
+       ) = @_;
+    my $q  = CGI->new();
+    print $q->header( -type=>'text/html', -charset=>'UTF-8', );
+    print << "EOT";
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>$title</title>
+  <link rel="stylesheet" href="./timetable.css" type="text/css">
+</head>
+<body>
+<center>
+EOT
+}
+
+# テーブル完了出力
+sub outputTimeTblTail {
+    my (
+        $leftcol,   # 後始末カラム数
+       ) = @_;
+    if ( $leftcol > 0 ) {
+        print "</td>\n";
+        print '<td colspan="' . $leftcol . '" rowspan="1" ' .
+              'class="no-use"></td>' . "\n";
+    }
+    print "</tr>\n</table>\n";
+}
+
+# HTML完了出力
+sub outputHtmlTail {
+    print << "EOT";
+</center>
+</BODY>
+</HTML>
+EOT
+}
+
 #-----以下共通DB操作定義
 #  本来はRegister_dbの中に隠蔽されるべき処理
 

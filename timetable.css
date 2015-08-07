@@ -129,6 +129,12 @@ a:visited {
     td.tic {
         background:#FFFFFF;
     }
+    th.timeroom {
+        font-weight:bold;
+        text-align:center;
+        font-size:80%;
+        background:#D4C29C;
+    }
     th.time {
         font-weight:bold;
         text-align:center;
@@ -148,6 +154,12 @@ a:visited {
     }
     .open {
         background:#FFFFFF;
+    }
+    .unset {
+        background:#FFFFFF;
+    }
+    .stop{
+        background:#DDD;
     }
     .no-use {
         background:#DDD;
@@ -202,6 +214,7 @@ a:visited {
     td.tic {
         background:#FFFFFF;
     }
+    th.timeroom,
     th.time {
         font-size:50%;
         text-align:center;
@@ -215,10 +228,12 @@ a:visited {
         vertical-align:middle;
         background:#FFF;
     }
+    .unset,
     .use,
     .open  {
         background:#FFFFFF;
     }
+    .stop,
     .no-use {
         background:#CCC
     }

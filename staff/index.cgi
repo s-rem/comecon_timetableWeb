@@ -21,7 +21,7 @@ our ( $PrgURL, @SETime, @TrgDate, $Tspan, $Maxwidth, $Roomwidth, $CellSpc, );
 my  ( $Maxcol, $Colsize, );
 
 sub main {
-    my $dayNo = ''; # ダミー
+    my $dayNo;
     # 定数値設定
     my $acttime = 0;
     foreach $dayNo ( 0, 1 ) {
@@ -38,7 +38,7 @@ sub main {
     $Colsize = int( $colsize_h / ( 60 / $Tspan ) ) - $CellSpc;
 
     # 出力開始
-    outputHtmlHeadBodytop();
+    outputHtmlHeadBodytop('タイムテーブル(staff用)');
     # タイムテーブルヘッダ出力
     outputTimeTblHead( $dayNo );
 
@@ -50,63 +50,42 @@ sub main {
     my $linenum = 0;    # 出力行数?
     my $oloc_seq = 0;   # 企画情報レコード番号退避
     my $oroom_name = '';    # 部屋名退避
-    my $oroom_row = '';     # 表示順序退避
     while( my @row = $sth->fetchrow_array ) {
         outputTimeTbl( \@row, \$linenum, \$col,
-                       \$oloc_seq, \$oroom_name, \$oroom_row,
-                       $dayNo );
+                       \$oloc_seq, \$oroom_name, $dayNo );
     }
     $sth->finish;
 
-    # 本体と未配置の間出力
-    outputTimeTblMidle( $Maxcol - $col );
-
-    # 未配置企画取得
-    $sth = dbGetProgDeny( $dbobj );
-    # 未配置企画出力
-    my $oldprg_code = '';
-    while( my @row = $sth->fetchrow_array ) {
-        outputTimeTblDeny( \@row, \$oldprg_code );
+    # 未配置企画、中止企画出力
+    foreach my $flg ( 0, 1 ) {   # この0,1は数値ではなく、偽,真
+        # 前列後始末と列出力準備
+        outputTimeTblMidle( $flg, $Maxcol - $col, \$col );
+        # 未配置/中止企画取得
+        $sth = dbGetProgDenyStop( $dbobj, $flg );
+        # 未配置/中止企画出力
+        my $oldprg_code = '';
+        while( my @row = $sth->fetchrow_array ) {
+            outputTimeTblDenyStop( \@row, \$oldprg_code );
+        }
+        $sth->finish;
     }
 
-    $sth->finish;
     db_disconnect( $dbobj );
-
     # 出力終了
-    outputTimeTblTail();
+    outputTimeTblTail( $Maxcol - $col );
     outputHtmlTail();
-}
-
-# HTMLヘッダ部分出力
-sub outputHtmlHeadBodytop {
-    my $q  = CGI->new();
-    print $q->header( -type=>'text/html', -charset=>'UTF-8', );
-    print << "EOT";
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <TITLE>タイムテーブル(staff用)</TITLE>
-  <link rel="stylesheet" href="./timetable.css" type="text/css">
-</head>
-<body>
-<center>
-EOT
 }
 
 # タイムテーブルヘッダ部分出力
 sub outputTimeTblHead {
-    my (
-        $dayNo,        # 日付コード(0|1) # ダミー
-       ) = @_;
     print '<table cellspacing="' . $CellSpc . '">' . "\n";
     print "<thead>\n";
     ## 時刻帯出力
     my $colspanval = 60 / $Tspan;
     my $ticcnt = 1; # 部屋名分
     print '<tr align="center" height="20">' . "\n";
-    foreach $dayNo ( 0, 1 ) {
-        print '<th rowspan="2" width ="' . $Roomwidth . '">' . 
+    foreach my $dayNo ( 0, 1 ) {
+        print '<th rowspan="2" width ="' . $Roomwidth . '" class="timeroom">' . 
               $TrgDate[$dayNo] . '</th>' . "\n";
         my $lasthour = $SETime[$dayNo]->{'e'};
         $lasthour++ if ( $SETime[$dayNo]->{'em'} > 0 );
@@ -134,8 +113,6 @@ sub outputTimeTbl {
         $p_col,
         $p_oldloc_seq,
         $p_oldroom_name,
-        $p_oldroom_row,
-        $dayNo,             # ダミー
        ) = @_;
     my ( $day, $stime )  = split( /\s/, $pArow->[0] );
     my ( $day2, $etime ) = split( /\s/, $pArow->[1] );
@@ -148,13 +125,12 @@ sub outputTimeTbl {
     my $role_code   = $pArow->[6];
     my $psn_name    = decode('utf8', $pArow->[7]);
     my $psn_count   = $pArow->[8];
-    my $room_row    = $pArow->[9];
-    my $psn_code    = $pArow->[10];
-    my $sts_code    = $pArow->[11];
+    my $psn_code    = $pArow->[9];
+    my $sts_code    = $pArow->[10];
     $sts_code = '' unless defined($sts_code);
-    my $sts_name    = decode('utf8', $pArow->[12]);
+    my $sts_name    = decode('utf8', $pArow->[11]);
     $sts_name = '' unless defined($sts_name);
-    my $pg_options  = decode('utf8', $pArow->[13]);
+    my $pg_options  = decode('utf8', $pArow->[12]);
 
     if ( $room_name ne $$p_oldroom_name ) {
         if ( $$p_linenum != 0 ) {
@@ -173,7 +149,6 @@ sub outputTimeTbl {
         $$p_oldroom_name = $room_name;
         $$p_oldloc_seq = 0;
     }
-    $$p_oldroom_row  = $room_row;
     my ( $s_tm_h, $s_tm_m ) = split( /:/, $stime );
     my ( $e_tm_h, $e_tm_m ) = split( /:/, $etime );
     my ( $s_col, $e_col );
@@ -216,51 +191,59 @@ sub outputTimeTbl {
     $$p_col = $e_col;
     $$p_linenum++;
 
-    my $cls;
-    my $wksts;
+    my $cls = '';
+    my $wksts = '';
     my $bl_s = ( $psn_count != 0 ) ? '<BLINK>★</BLINK>' : '';
     if ( $role_code eq 'PP' ) {
-        $wksts = '出:';
-        $psn_name .= ( $sts_name eq '' ) ? '[状況不明]' : "[$sts_name]";
         $cls = 'pp';
         $cls = 'pp_ng' if ( $sts_code eq 'NG-01' || $sts_code eq 'NG-02' );
+        $wksts = '出:';
+        $psn_name .= ( $sts_name eq '' ) ? '[状況不明]' : "[$sts_name]";
     } elsif ( $role_code eq 'PO' ) {
-        $wksts = '主:';
         $cls = 'po';
+        $wksts = '主:';
     } elsif ( $role_code eq 'PR' ) {
+        $cls = 'pr';
         $wksts = '担:';
-        $cls = 'pr';
     } else {
-        $wksts = '＊:';
         $cls = 'pr';
+        $wksts = '＊:';
     }
-    print '<span class="' . $cls . '">' . $wksts . $bl_s .
-          '<a href="./person_detail.cgi?' . $psn_code . '">' .
-          $psn_name . '</a></span>' . "\n";
+    if ( $wksts ne '' ) {
+        print '<span class="' . $cls . '">' . $wksts . $bl_s .
+              '<a href="./person_detail.cgi?' . $psn_code . '">' .
+              $psn_name . '</a></span>' . "\n";
+    }
 }
 
-# タイムテーブル未配置企画出力準備
+# 未配置/中止企画出力準備
 sub outputTimeTblMidle {
     my (
+        $stopflg,   # 中止企画を抽出するか?
         $leftcol,   # 後始末カラム数
+        $p_col,
        ) = @_;
     if ( $leftcol > 0 ) {
         print "</td>\n";
         print '<td colspan="' . $leftcol . '" rowspan="1" ' .
               'class="no-use"></td>' . "\n";
     }
+    my $roomname = ( $stopflg ) ? '中止企画' : '未配置企画';
+    my $cls      = ( $stopflg ) ? 'stop'     : 'unset';
     print "</tr>\n" .
           '<tr height="32">' . "\n" .
           '<th width="' . $Roomwidth . '" colspan="1" rowspan="1" ' .
-          ' class="room">未配置企画<BR></th>' . "\n";
-    # 間は1カラム開ける
+          ' class="room">' . $roomname . '</th>' . "\n";
+    # 間は1カラム,後は2カラム開ける
     print '<td colspan="1" rowspan="1" class="no-use"></td>' . "\n";
-    my $wkcol = $Maxcol - 4; # 先頭部屋カラムと間の1カラム後ろの2カラム
-    print '<td colspan="' . $wkcol . '" rowspan="1" class="unset">';
+    $$p_col = 2;
+    # 先頭部屋カラムと間の1カラム後ろの2カラムを除いたものが未配置カラム数
+    my $wkcol = $Maxcol - ( 1 + 1 + $$p_col );
+    print '<td colspan="' . $wkcol . '" rowspan="1" class="' . $cls . '">';
 }
 
-# 未配置企画出力
-sub outputTimeTblDeny {
+# 未配置/中止企画出力
+sub outputTimeTblDenyStop {
     my (
         $pArow,
         $p_oldprg_code,
@@ -274,7 +257,7 @@ sub outputTimeTblDeny {
     my $psn_code   = $pArow->[5];
 
     if ( $prg_code ne $$p_oldprg_code ) {
-        print "<br>\n" if ( $$p_oldprg_code );
+        print "<hr>\n" if ( $$p_oldprg_code );
         print
             '<INPUT TYPE="CHECKBOX" name="PPC" value="' . $prg_code . '"> ' .
             '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
@@ -297,25 +280,6 @@ sub outputTimeTblDeny {
         $cls = 'pr';
     }
     print '<span class="' . $cls . '">' . $wksts . $psn_name . '</span> ';
-}
-
-# 未配置出力後始末出力
-sub outputTimeTblTail {
-    print << "EOT";
-</td>
-<td colspan="2" rowspan="1" class="no-use"></td>
-</tr>
-</table>
-EOT
-}
-
-# HTML完了出力
-sub outputHtmlTail {
-    print << "EOT";
-</center>
-</BODY>
-</HTML>
-EOT
 }
 
 #-----以下DB操作
@@ -354,7 +318,7 @@ sub dbGetProg {
                          " OR e.role_code = 'PO' and x.role_code = 'PO' " .
                          " OR e.role_code = 'PR' ) " .
                '), ' .
-               'a.room_row, f.seq, g.ps_code, g.ps_name, c.pg_options ' .
+               'f.seq, g.ps_code, g.ps_name, c.pg_options ' .
           'FROM ' . $pgLcDt . ' a ' .
             'INNER JOIN ' . $pgRnMt . ' b ON a.room_key     = b.seq ' .
             'INNER JOIN ' . $pgNmMt . ' c ON a.pg_key       = c.pg_key ' .
@@ -368,10 +332,11 @@ sub dbGetProg {
     return $sth;
 }
 
-# 未配置企画情報取得
-sub dbGetProgDeny {
+# 未配置/中止企画情報取得
+sub dbGetProgDenyStop {
     my (
         $dbobj,     # SFCON::Register_dbオブジェクト
+        $stopflg,   # 中止企画を抽出するか?
        ) = @_;
     my $db = $dbobj->{'database'};
     my $prefix = $dbobj->prefix();
@@ -381,6 +346,7 @@ sub dbGetProgDeny {
     my $pgRlMt = $prefix . $RLMT;
     my $pgPsIf = $prefix . $PSIF;
 
+    my $condstr = ( $stopflg ) ? 'AND NOT ' : 'AND ';
     my $sth = $db->prepare(
         'SELECT b.pg_code, b.pg_name, b.pg_options, c.role_code, ' .
                'd.name, d.seq ' .
@@ -388,9 +354,12 @@ sub dbGetProgDeny {
             'INNER JOIN ' . $pgNmMt . ' b ON a.pg_key = b.pg_key ' .
             'INNER JOIN ' . $pgRlMt . ' c ON a.role_key = c.role_key ' .
             'INNER JOIN ' . $pgPsIf . ' d ON a.person_key = d.seq ' .
-          'WHERE NOT EXISTS ( ' .
-            'SELECT * FROM ' . $pgLcDt . ' e ' .
-              'WHERE a.pg_key = e.pg_key ) ' .
+          'WHERE ' .
+            'NOT EXISTS ( ' .
+              'SELECT * FROM ' . $pgLcDt . ' e WHERE a.pg_key = e.pg_key ) ' .
+            $condstr .
+              "( b.pg_options = '公開' OR b.pg_options = '実行' " .
+                "OR b.pg_options = '調整中' ) " .
           'ORDER BY b.pg_options DESC, b.pg_code, c.role_code');
     $sth->execute();
     return $sth;

@@ -8,12 +8,12 @@ a:link {
 }
 a:hover {
     text-decoration:none;
-    background-color:yellow;
+    background:yellow;
 }
 a:active {
     text-color: #ff0000;
     text-decoration:none;
-    background-color:yellow;
+    background:yellow;
 }
 a:visited {
     text-color: #000099;
@@ -32,7 +32,7 @@ a:visited {
     a:hover,
     a:active {
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     .pp {
@@ -49,7 +49,7 @@ a:visited {
     .pp a:active {
         color : green;
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     .pp_ng {
@@ -66,7 +66,7 @@ a:visited {
     .pp_ng a:active {
         color : green;
         text-decoration:line-through;
-        background-color:yellow;
+        background:yellow;
     }
 
     .po {
@@ -83,7 +83,7 @@ a:visited {
     .po a:active {
         color : blue;
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     .pr {
@@ -100,7 +100,7 @@ a:visited {
     .pr a:active {
         color : red;
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     table {
@@ -109,7 +109,7 @@ a:visited {
         border: 0;
         border-color:#999;
         height:auto;
-        background-color:#cccccc;
+        background:#cccccc;
     }
     td,
     th {
@@ -128,6 +128,11 @@ a:visited {
     td.tic {
         background:#FFFFFF;
     }
+    th.timeroom {
+        font-weight:bold;
+        text-align:left;
+        background:#cccccc;
+    }
     th.time {
         font-weight:bold;
         text-align:left;
@@ -138,17 +143,20 @@ a:visited {
         vertical-align:middle;
         background:#E6FF8E;
     }
-    .unset {
-        background:#ffffff;
-    }
     .use {
         background:#ffe0e0;
     }
     .open {
         background:#e0ffe0;
     }
+    .unset {
+        background:#ffffff;
+    }
     .no-use {
         background:#c0c0c0;
+    }
+    .stop {
+        background:#dddddd;
     }
 }
 
@@ -200,6 +208,7 @@ a:visited {
     td.tic {
         background:#FFFFFF;
     }
+    th.timeroom,
     th.time {
         font-size:50%;
         text-align:center;
@@ -213,10 +222,12 @@ a:visited {
         vertical-align:middle;
         background:#FFF;
     }
+    .unset,
     .use,
     .open {
         background:#FFFFFF;
     }
+    .stop,
     .no-use {
         background:#CCC
     }

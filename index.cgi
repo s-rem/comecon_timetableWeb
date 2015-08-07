@@ -37,7 +37,7 @@ sub main {
     $Colsize = int( $colsize_h / ( 60 / $Tspan ) ) - $CellSpc;
 
     # 出力開始
-    outputHtmlHeadBodytop();
+    outputHtmlHeadBodytop('タイムテーブル');
     unless ( $dayNo =~ /[01]/ ) {
         print '<H1><Font color="red">Wrong Parameter</font></H1>' . "\n";
         outputHtmlTail();
@@ -54,36 +54,16 @@ sub main {
     my $linenum = 0;    # 出力行数?
     my $oloc_seq = 0;   # 企画情報レコード番号退避
     my $oroom_name = '';    # 部屋名退避
-    my $oroom_row = '';     # 表示順序退避
     while( my @row = $sth->fetchrow_array ) {
         outputTimeTbl( \@row, \$linenum, \$col,
-                       \$oloc_seq, \$oroom_name, \$oroom_row, 
-                       $dayNo );
+                       \$oloc_seq, \$oroom_name, $dayNo );
     }
 
     $sth->finish;
     db_disconnect( $dbobj );
-
     # 出力終了
     outputTimeTblTail( $Maxcol - $col );
     outputHtmlTail();
-}
-
-# HTMLヘッダ部分出力
-sub outputHtmlHeadBodytop {
-    my $q  = CGI->new();
-    print $q->header( -type=>'text/html', -charset=>'UTF-8', );
-    print << "EOT";
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <title>タイムテーブル</title>
-  <link rel="stylesheet" href="./timetable.css" type="text/css">
-</head>
-<body>
-<center>
-EOT
 }
 
 # タイムテーブルヘッダ部分出力
@@ -97,7 +77,7 @@ sub outputTimeTblHead {
     my $colspanval = 60 / $Tspan;
     my $ticcnt = 1; # 部屋名分
     print '<tr align="center" height="20">' . "\n";
-    print '<th rowspan="2" width ="' . $Roomwidth . '" class="time">' .
+    print '<th rowspan="2" width ="' . $Roomwidth . '" class="timeroom">' .
           $TrgDate[$dayNo] . '</th>' . "\n";
     my $lasthour = $SETime[$dayNo]->{'e'};
     $lasthour++ if ( $SETime[$dayNo]->{'em'} > 0 );
@@ -124,7 +104,6 @@ sub outputTimeTbl {
         $p_col,
         $p_oldloc_seq,
         $p_oldroom_name,
-        $p_oldroom_row,
         $dayNo,
        ) = @_;
     my ( $day,  $stime ) = split( /\s/, $pArow->[0] );
@@ -137,7 +116,6 @@ sub outputTimeTbl {
     my $loc_seq     = $pArow->[5];
     my $role_code   = $pArow->[6];
     my $psn_name    = decode('utf8', $pArow->[7]);
-    my $room_row    = $pArow->[8];
     my $psn_code    = $pArow->[9];
     my $sts_code    = $pArow->[10];
     $sts_code = '' unless defined($sts_code);
@@ -159,7 +137,6 @@ sub outputTimeTbl {
         $$p_oldroom_name = $room_name;
         $$p_oldloc_seq = 0;
     }
-    $$p_oldroom_row = $room_row;
     my ( $s_tm_h, $s_tm_m ) = split( /:/, $stime );
     my ( $e_tm_h, $e_tm_m ) = split( /:/, $etime );
     my ( $s_col, $e_col );
@@ -191,42 +168,23 @@ sub outputTimeTbl {
     }
     $$p_col = $e_col;
     $$p_linenum++;
+    
+    my $cls = '';
+    my $wksts = '';
+    my $bl_s = '';
     if ( $role_code eq 'PP' ) {
-        my $pp_cls = 'pp';
-        my $wksts = '';
+        $cls = 'pp';
         if ( $sts_code eq 'OK-01' ) {
             $wksts = '出演:';
         } elsif ( $sts_code eq 'NG-04' ) {
             $wksts = 'バーチャル出演:';
         }
-        if ( $wksts ne '' ) {
-            print '<span class="' . $pp_cls . '">' . $wksts . 
-                  '<a href="./person_detail.cgi?' . $psn_code . '">' .
-                  $psn_name . '</a></span>' . "\n";
-        }
     }
-}
-
-# テーブル完了出力
-sub outputTimeTblTail {
-    my (
-        $leftcol,   # 後始末カラム数
-       ) = @_;
-    if ( $leftcol > 0 ) {
-        print "</td>\n";
-        print '<td colspan="' . $leftcol . '" rowspan="1" ' .
-              'class="no-use"></td>' . "\n";
+    if ( $wksts ne '' ) {
+        print '<span class="' . $cls . '">' . $wksts . $bl_s .
+              '<a href="./person_detail.cgi?' . $psn_code . '">' .
+              $psn_name . '</a></span>' . "\n";
     }
-    print "</tr>\n</table>\n";
-}
-
-# HTML完了出力
-sub outputHtmlTail {
-    print << "EOT";
-</center>
-</BODY>
-</HTML>
-EOT
 }
 
 #-----以下DB操作
@@ -253,7 +211,8 @@ sub dbGetProg {
     my $sth = $db->prepare(
         'SELECT a.start_time, a.end_time, b.room_name, ' .
                'c.pg_code, c.pg_name, a.seq, e.role_code, f.name, ' .
-               'a.room_row, f.seq, g.ps_code ' .
+               '0, ' .  # 重複数のダミー
+               'f.seq, g.ps_code ' .
           'FROM '        . $pgLcDt . ' a ' .
             'INNER JOIN ' . $pgRnMt . ' b ON a.room_key     = b.seq ' .
             'INNER JOIN ' . $pgNmMt . ' c ON a.pg_key       = c.pg_key ' .
