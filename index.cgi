@@ -45,7 +45,6 @@ sub main {
     }
     # タイムテーブルヘッダ出力
     outputTimeTblHead( $dayNo );
-
     # タイムテーブル本体取得
     my $dbobj = db_connect();
     my $sth = dbGetProg( $dbobj );
@@ -58,7 +57,6 @@ sub main {
         outputTimeTbl( \@row, \$linenum, \$col,
                        \$oloc_seq, \$oroom_name, $dayNo );
     }
-
     $sth->finish;
     db_disconnect( $dbobj );
     # 出力終了
@@ -163,8 +161,8 @@ sub outputTimeTbl {
         }
         $$p_oldloc_seq = $loc_seq;
         print $s_tm_h . ':' . $s_tm_m . '-' . $e_tm_h . ':' .  $e_tm_m . '<br>';
-        print '<a href ="' . $PrgURL . $prg_code . '">' .  $prg_code .
-              '</a> ' . $prg_name . '<br>';
+        print '<a href ="' . $PrgURL . $prg_code . '">' .
+              $prg_name . '</a><br>';
     }
     $$p_col = $e_col;
     $$p_linenum++;

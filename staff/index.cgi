@@ -41,7 +41,6 @@ sub main {
     outputHtmlHeadBodytop('タイムテーブル(staff用)');
     # タイムテーブルヘッダ出力
     outputTimeTblHead( $dayNo );
-
     # タイムテーブル本体取得
     my $dbobj = db_connect();
     my $sth = dbGetProg( $dbobj );
@@ -55,7 +54,6 @@ sub main {
                        \$oloc_seq, \$oroom_name, $dayNo );
     }
     $sth->finish;
-
     # 未配置企画、中止企画出力
     foreach my $flg ( 0, 1 ) {   # この0,1は数値ではなく、偽,真
         # 前列後始末と列出力準備
@@ -69,7 +67,6 @@ sub main {
         }
         $sth->finish;
     }
-
     db_disconnect( $dbobj );
     # 出力終了
     outputTimeTblTail( $Maxcol - $col );
@@ -184,8 +181,8 @@ sub outputTimeTbl {
         }
         $$p_oldloc_seq = $loc_seq;
         print $s_tm_h . ':' . $s_tm_m . '-' . $e_tm_h . ':' .  $e_tm_m . '<br>';
-        print '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
-              '</a> ' . $prg_name. '[' . $pg_options . ']<br>';
+        print '<a href ="' . $PrgURL . $prg_code . '">' .
+              $prg_code . ' ' . $prg_name. '</a> [' . $pg_options . ']<br>';
     }
     $$p_col = $e_col;
     $$p_linenum++;
@@ -257,8 +254,8 @@ sub outputTimeTblDenyStop {
 
     if ( $prg_code ne $$p_oldprg_code ) {
         print "<hr>\n" if ( $$p_oldprg_code );
-        print '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
-              '</a> ' . $prg_name . '<br>' . $prg_option ;
+        print '<a href ="' . $PrgURL . $prg_code . '">' .
+              $prg_code . ' ' . $prg_name . '</a><br>' . $prg_option ;
         $$p_oldprg_code = $prg_code;
     }
     my $cls;
@@ -276,7 +273,7 @@ sub outputTimeTblDenyStop {
         $wksts = '＊:';
         $cls = 'pr';
     }
-    print '<span class="' . $cls . '">' . $wksts . $psn_name . '</span> ';
+    print '<span class="' . $cls . '">&nbsp;' . $wksts . $psn_name . '</span> ';
 }
 
 #-----以下DB操作
