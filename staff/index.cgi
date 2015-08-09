@@ -183,7 +183,6 @@ sub outputTimeTbl {
             print "\n"; # 重複企画の間
         }
         $$p_oldloc_seq = $loc_seq;
-        print '<INPUT TYPE="CHECKBOX" name="PLS" value="' . $loc_seq . '">';
         print $stime . '-<br>';
         print '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
               '</a> ' . $prg_name. '[' . $pg_options . ']<br>';
@@ -258,10 +257,8 @@ sub outputTimeTblDenyStop {
 
     if ( $prg_code ne $$p_oldprg_code ) {
         print "<hr>\n" if ( $$p_oldprg_code );
-        print
-            '<INPUT TYPE="CHECKBOX" name="PPC" value="' . $prg_code . '"> ' .
-            '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
-            '</a> ' . $prg_name . '<br>' . $prg_option ;
+        print '<a href ="' . $PrgURL . $prg_code . '">' . $prg_code .
+              '</a> ' . $prg_name . '<br>' . $prg_option ;
         $$p_oldprg_code = $prg_code;
     }
     my $cls;
