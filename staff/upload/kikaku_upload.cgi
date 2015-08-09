@@ -177,6 +177,7 @@ sub registProgram2DB {
     my $maxRow = $sheet->{"MaxRow"};
     for(my $row=1; $row<=$maxRow; $row++) {
         my $p_code = getExcelVal($sheet,$row,$pHash->{'c_p_code'});
+        last unless ( $p_code );
         program_add($dbobj,
             $p_code,
             getExcelVal($sheet,$row,$pHash->{'c_name'}),
@@ -227,6 +228,7 @@ sub registPerson2DB {
 
     for(my $row=1; $row<=$maxRow; $row++) {
         my $p_code = getExcelVal($sheet,$row,0);
+        last unless ( $p_code );
         if ( $DEBUGFLG ) {
             print $row."  ";
             for(my $col=0; $col<=$maxCol; $col++) {
