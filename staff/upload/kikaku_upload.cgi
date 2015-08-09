@@ -176,12 +176,9 @@ sub registProgram2DB {
     print '<table border="1">' . "\n";
     my $maxRow = $sheet->{"MaxRow"};
     for(my $row=1; $row<=$maxRow; $row++) {
-        my $room_row = 0;
-        if ($pHash->{'c_room_row'}) {
-            $room_row = getExcelVal($sheet,$row,$pHash->{'c_room_row'});
-        }
+        my $p_code = getExcelVal($sheet,$row,$pHash->{'c_p_code'});
         program_add($dbobj,
-            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            $p_code,
             getExcelVal($sheet,$row,$pHash->{'c_name'}),
             getExcelVal($sheet,$row,$pHash->{'c_name_f'}),
             getExcelVal($sheet,$row,$pHash->{'c_status'}),
@@ -192,22 +189,22 @@ sub registProgram2DB {
             getExcelVal($sheet,$row,$pHash->{'c_date2'}),
             getExcelVal($sheet,$row,$pHash->{'c_s_time2'}),
             getExcelVal($sheet,$row,$pHash->{'c_e_time2'}),
-            $room_row
+            getExcelVal($sheet,$row,$pHash->{'c_room_row'}),
         );
         person_search($dbobj,
-            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            $p_code,
             getExcelVal($sheet,$row,$pHash->{'c_staff'}),
             '-', '', 'PR', 0);
         person_search($dbobj,
-            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            $p_code,
             getExcelVal($sheet,$row,$pHash->{'c_staff'}),
             '-', '', 'PR', 1);
         person_search($dbobj,
-            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            $p_code,
             getExcelVal($sheet,$row,$pHash->{'c_owner'}),
             '-', '', 'PO', 0);
         person_search($dbobj,
-            getExcelVal($sheet,$row,$pHash->{'c_p_code'}),
+            $p_code,
             getExcelVal($sheet,$row,$pHash->{'c_owner'}),
             '-', '', 'PO', 1);
     }
@@ -229,26 +226,23 @@ sub registPerson2DB {
     my $maxCol = $sheet->{"MaxCol"};
 
     for(my $row=1; $row<=$maxRow; $row++) {
+        my $p_code = getExcelVal($sheet,$row,0);
         if ( $DEBUGFLG ) {
             print $row."  ";
             for(my $col=0; $col<=$maxCol; $col++) {
-                my $cell = $sheet->{"Cells"}[$row][$col];
-                my $val = "";
-                if ($cell) {
-                    $val = $cell->Value;
-                }
+                my $val = getExcelVal($sheet,$row,$col);
                 print "$col:$val ";
             }
             print "\n";
         }
         person_search($dbobj,
-            getExcelVal($sheet,$row,0),
+            $p_code,
             getExcelVal($sheet,$row,3),
             getExcelVal($sheet,$row,4),
             getExcelVal($sheet,$row,9),
             'PP', 0);
         person_search($dbobj,
-            getExcelVal($sheet,$row,0),
+            $p_code,
             getExcelVal($sheet,$row,21),
             getExcelVal($sheet,$row,22),
             getExcelVal($sheet,$row,9),
