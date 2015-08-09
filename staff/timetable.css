@@ -106,10 +106,21 @@ a:visited {
     table {
         padding:0;
         border-style:solid;
-        border: 0;
         border-color:#999;
         height:auto;
+        border:0;
         background:#cccccc;
+    }
+    tr {
+        height:32px;
+    }
+    tr.roomname {
+        text-align:center;
+        height:20px;
+    }
+    tr.tspan {
+        text-align:center;
+        height:4px;
     }
     td,
     th {

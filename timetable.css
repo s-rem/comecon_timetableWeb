@@ -8,12 +8,12 @@ a:link {
 }
 a:hover {
     text-decoration:none;
-    background-color:yellow;
+    background:yellow;
 }
 a:active {
     text-color: #ff0000;
     text-decoration:none;
-    background-color:yellow;
+    background:yellow;
 }
 a:visited {
     text-color: #000099;
@@ -32,7 +32,7 @@ a:visited {
     a:hover,
     a:active {
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     .pp {
@@ -49,7 +49,7 @@ a:visited {
     .pp a:active {
         color : green;
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     .pp_ng {
@@ -66,7 +66,7 @@ a:visited {
     .pp_ng a:active {
         color : green;
         text-decoration:line-through;
-        background-color:yellow;
+        background:yellow;
     }
 
     .po {
@@ -83,7 +83,7 @@ a:visited {
     .po a:active {
         color : blue;
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     .pr {
@@ -100,17 +100,28 @@ a:visited {
     .pr a:active {
         color : red;
         text-decoration:none;
-        background-color:yellow;
+        background:yellow;
     }
 
     table {
         padding:0;
         border-style:solid;
-        border-width:1px 1px 0 0;
         border-color:#999;
         height:auto;
-        background-color:#cccccc;
         margin:10px auto;
+        border-width: 1px 1px 0 0;
+        background:#cccccc;
+    }
+    tr {
+        height:32px;
+    }
+    tr.roomname {
+        text-align:center;
+        height:20px;
+    }
+    tr.tspan {
+        text-align:center;
+        height:4px;
     }
     td,
     th {
@@ -158,10 +169,10 @@ a:visited {
     .unset {
         background:#FFFFFF;
     }
-    .stop{
+    .no-use {
         background:#DDD;
     }
-    .no-use {
+    .stop {
         background:#DDD;
     }
 }
@@ -230,7 +241,7 @@ a:visited {
     }
     .unset,
     .use,
-    .open  {
+    .open {
         background:#FFFFFF;
     }
     .stop,

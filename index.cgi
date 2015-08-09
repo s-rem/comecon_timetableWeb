@@ -74,7 +74,7 @@ sub outputTimeTblHead {
     ## 時刻帯出力
     my $colspanval = 60 / $Tspan;
     my $ticcnt = 1; # 部屋名分
-    print '<tr align="center" height="20">' . "\n";
+    print '<tr class="roomname">' . "\n";
     print '<th rowspan="2" width ="' . $Roomwidth . '" class="timeroom">' .
           $TrgDate[$dayNo] . '</th>' . "\n";
     my $lasthour = $SETime[$dayNo]->{'e'};
@@ -86,7 +86,7 @@ sub outputTimeTblHead {
     }
     print "</tr>\n";
     ## Tspan分区切り出力
-    print '<tr align="center" height="4">' . "\n";
+    print '<tr class="tspan">' . "\n";
     for ( my $c = 1; $c < $ticcnt; $c++ ) {
         print '<td class="tic" width="' . $Colsize . '"></td>' . "\n";
     }
@@ -129,7 +129,7 @@ sub outputTimeTbl {
             print "</tr>\n";
             $$p_col = 0;
         }
-        print '<tr height="32">' . "\n";
+        print "<tr>\n";
         print '<th width="' . $Roomwidth . '" colspan="1" rowspan="1" ' .
               'class="room">' . $room_name . "</th>\n";
         $$p_oldroom_name = $room_name;
@@ -137,11 +137,12 @@ sub outputTimeTbl {
     }
     my ( $s_tm_h, $s_tm_m ) = split( /:/, $stime );
     my ( $e_tm_h, $e_tm_m ) = split( /:/, $etime );
-    my ( $s_col, $e_col );
     my $scol = 0;
     my $wkt = $SETime[$dayNo]->{'s'};
-    $s_col = int( ( ( $s_tm_h - $wkt ) * 60 + $s_tm_m ) / $Tspan ) + $scol;
-    $e_col = int( ( ( $e_tm_h - $wkt ) * 60 + $e_tm_m ) / $Tspan ) + $scol;
+    # 開始列は切り捨て、終了列は切り上げ
+    my ( $s_col, $e_col );
+    $s_col = int( ( (($s_tm_h-$wkt)*60+$s_tm_m ) / $Tspan )       ) + $scol;
+    $e_col = int( ( (($e_tm_h-$wkt)*60+$e_tm_m ) / $Tspan ) + 0.9 ) + $scol;
     my $leftcolval = $s_col - $$p_col;
     if ( $leftcolval > 0 ) {
         print '<td colspan="' . $leftcolval . '" rowspan="1" ' .
@@ -156,11 +157,11 @@ sub outputTimeTbl {
             my $cls = 'use';
             print '<td colspan="' . $cspan . '" rowspan="1" ' .
                   'class="' . $cls . '">' . "\n";
+            print $s_tm_h . ':' . $s_tm_m . '-' . $e_tm_h . ':' .  $e_tm_m . '<br>';
         } else {
             print "\n"; # 重複企画の間
         }
         $$p_oldloc_seq = $loc_seq;
-        print $s_tm_h . ':' . $s_tm_m . '-' . $e_tm_h . ':' .  $e_tm_m . '<br>';
         print '<a href ="' . $PrgURL . $prg_code . '">' .
               $prg_name . '</a><br>';
     }
