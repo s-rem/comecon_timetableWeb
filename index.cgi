@@ -162,7 +162,7 @@ sub outputTimeTbl {
             print "\n"; # 重複企画の間
         }
         $$p_oldloc_seq = $loc_seq;
-        print $stime . '-<br>';
+        print $s_tm_h . ':' . $s_tm_m . '-' . $e_tm_h . ':' .  $e_tm_m . '<br>';
         print '<a href ="' . $PrgURL . $prg_code . '">' .  $prg_code .
               '</a> ' . $prg_name . '<br>';
     }
@@ -181,7 +181,7 @@ sub outputTimeTbl {
         }
     }
     if ( $wksts ne '' ) {
-        print '<span class="' . $cls . '">' . $wksts . $bl_s .
+        print '<span class="' . $cls . '">&nbsp;' . $wksts . $bl_s .
               '<a href="./person_detail.cgi?' . $psn_code . '">' .
               $psn_name . '</a></span>' . "\n";
     }
