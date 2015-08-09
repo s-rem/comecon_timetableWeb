@@ -159,7 +159,7 @@ sub outputTimeTbl {
             print '<td colspan="' . $cspan . '" rowspan="1" ' .
                   'class="' . $cls . '">' . "\n";
         } else {
-            print "<hr>\n";
+            print "\n"; # 重複企画の間
         }
         $$p_oldloc_seq = $loc_seq;
         print $stime . '-<br>';
