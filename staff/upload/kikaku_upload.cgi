@@ -532,6 +532,8 @@ sub person_search {
     $name_f =~ s/\)|）|\s|　//g;
     ($name_f) = split(/\t+/,$name_f, 1);
 
+    my $updflg = 0; # 出演者情報を上書きするか
+
     # 名前 and 名前ふりがなで出演者情報を検索して、person_idを得る
     my $pgPsIf = $dbobj->prefix();
     $pgPsIf .= $openflg ? $PSOPIF : $PSIF;
@@ -564,6 +566,7 @@ sub person_search {
         while(@row = $sth->fetchrow_array) {
             $match ++;
             $person_id = $row[0];   # seqは数値
+            $updflg = 1; # 名前 or ふりがな のいずれか一方のみ一致なので、上書き
             # 取得した内容を最終出力バッファに追加書き込み
             $gs_print .= sprintf(
                     "[$gsmk]SEMI MATCH:\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
@@ -608,6 +611,9 @@ sub person_search {
                 "[$gsmk]ONE MATCH:\t%s\t%s\t%s\t%s\t%s\t%s<BR>\n",
                 $role_key, $p_code, $wkname, $wkname_f, $p_status, $status_key
             );
+        # 出演者情報を更新(名前/ふりがなのいずれかのみ一致に対応)
+        person_info_upd($person_id, $dbobj, $name, $name_f, $openflg)
+            if $updflg;
         # 出演者を登録
         person_add($dbobj, $p_code, $person_id, $role_key, $status_key,
                    $openflg);
@@ -672,6 +678,32 @@ sub person_info_add {
     return $seq_a;
 }
 
+# 出演者情報を更新
+sub person_info_upd {
+    my (
+        $person_id,     # 参加者ID
+        $dbobj,         # Register_DBオブジェクト
+        $name,          # 出演者名前
+        $name_f,        # 出演者名前ふりがな
+        $openflg,       # 公開情報登録か否か
+       ) = @_;
+
+    return if ($name_f eq '-'); # 担当者/主催者は更新しない
+
+    my $gsmk = $openflg ? 'O' : 'S';
+    my $db = $dbobj->{database};
+    my $pgPsIf = $dbobj->prefix();
+    $pgPsIf .= $openflg ? $PSOPIF : $PSIF;
+
+    my $sth = $db->prepare(
+            'UPDATE ' . $pgPsIf . ' SET name = ?, name_f = ? WHERE seq = ?'
+        );
+    $sth->execute($name, $name_f, $person_id);
+
+    $gs_print .= sprintf(
+            '<font color="red">[' . $gsmk . ']UPDATE</font>:' .
+            "\t%s\t<BR>\n", $person_id);
+}
 main();
 exit;
 1;
